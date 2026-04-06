@@ -1,26 +1,74 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --background: #0E0E0E;
+  --foreground: #e5e2e1;
+  --primary-cyan: #00FBFB;
+  --primary-cyan-dim: #00DDDD;
+  --secondary-amber: #e9c349;
+  --surface: #131313;
+  --surface-container: #201f1f;
+  --surface-high: #2a2a2a;
+  --outline: #3a4a49;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-manrope), 'Manrope', sans-serif;
+}
+
+html, body {
+  background-color: var(--background);
+}
+
+.font-headline {
+  font-family: var(--font-space-grotesk), 'Space Grotesk', sans-serif;
+}
+
+.glass-panel {
+  backdrop-filter: blur(20px);
+  background: rgba(53, 53, 52, 0.4);
+}
+
+.text-glow-cyan {
+  text-shadow: 0 0 15px rgba(0, 251, 251, 0.5);
+}
+
+@keyframes shimmer {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(100%); }
+}
+
+/* ── Game animations ── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes pulseCTA {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 251, 251, 0.35); }
+  50%       { box-shadow: 0 0 0 14px rgba(0, 251, 251, 0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.anim-fade-up   { animation: fadeUp  0.55s ease-out both; }
+.anim-fade-in   { animation: fadeIn  0.6s  ease-out both; }
+.anim-scale-in  { animation: scaleIn 0.5s  cubic-bezier(0.34,1.56,0.64,1) both; }
+.anim-pulse-cta { animation: pulseCTA 2.4s ease-in-out infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-fade-up, .anim-fade-in, .anim-scale-in, .anim-pulse-cta {
+    animation: none;
+    opacity: 1;
+  }
 }
