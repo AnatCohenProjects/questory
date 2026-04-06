@@ -18,9 +18,9 @@ export interface MediaItem {
 export type ExperienceStyle = 'story' | 'competitive' | 'learning';
 
 export const EXPERIENCE_STYLE_LABELS: Record<ExperienceStyle, string> = {
-  story: 'Story & Discovery',
-  competitive: 'Fast & Competitive',
-  learning: 'Learning & Exploration',
+  story: '🔭 סיפור וגילוי',
+  competitive: '⚡ מהיר ותחרותי',
+  learning: '🎓 למידה וחקר',
 };
 
 export const AUDIENCE_OPTIONS = ['משפחות', 'ילדים', 'מבוגרים', 'בני נוער', 'קבוצות'];
@@ -55,6 +55,14 @@ export interface GameDraft {
   mapUrl?: string;
   character: { name: string; tone: string };
   stations: StationDraft[];
+  // Auto-config from experience style
+  aiEnabled?: boolean;
+  hintsLevel?: 'low' | 'medium' | 'high';
+  competitionMode?: boolean;
+  timerEnabled?: boolean;
+  leaderboardEnabled?: boolean;
+  puzzleDifficulty?: 'simple' | 'medium' | 'deep';
+  knowledgeIntegrated?: boolean;
 }
 
 // ─── Factories ────────────────────────────────────────────────────────────────
@@ -85,7 +93,56 @@ export const defaultDraft: GameDraft = {
   mapUrl: '',
   character: { name: '', tone: '' },
   stations: [],
+  // Auto-config for 'story' style
+  aiEnabled: true,
+  hintsLevel: 'medium',
+  competitionMode: false,
+  timerEnabled: false,
+  leaderboardEnabled: false,
+  puzzleDifficulty: 'deep',
+  knowledgeIntegrated: false,
 };
+
+// Auto-config based on experience style
+export function getAutoConfigForStyle(style: ExperienceStyle): Partial<GameDraft> {
+  switch (style) {
+    case 'story':
+      return {
+        progressionType: 'ליניארי',
+        aiEnabled: true,
+        hintsLevel: 'medium',
+        competitionMode: false,
+        timerEnabled: false,
+        leaderboardEnabled: false,
+        puzzleDifficulty: 'deep',
+        knowledgeIntegrated: false,
+      };
+    case 'competitive':
+      return {
+        progressionType: 'פתוח',
+        aiEnabled: false,
+        hintsLevel: 'low',
+        competitionMode: true,
+        timerEnabled: true,
+        leaderboardEnabled: true,
+        puzzleDifficulty: 'medium',
+        knowledgeIntegrated: false,
+      };
+    case 'learning':
+      return {
+        progressionType: 'ליניארי',
+        aiEnabled: true,
+        hintsLevel: 'high',
+        competitionMode: false,
+        timerEnabled: false,
+        leaderboardEnabled: false,
+        puzzleDifficulty: 'simple',
+        knowledgeIntegrated: true,
+      };
+    default:
+      return {};
+  }
+}
 
 // ─── Conversion ───────────────────────────────────────────────────────────────
 

@@ -5,7 +5,10 @@ import {
   GameDraft, MediaItem, MediaItemType,
   EXPERIENCE_STYLE_LABELS, ExperienceStyle,
   AUDIENCE_OPTIONS, DURATION_OPTIONS, DIFFICULTY_OPTIONS, PROGRESSION_OPTIONS,
+  getAutoConfigForStyle,
 } from '@/types/builder';
+import ImageUpload from './ImageUpload';
+import AutoConfigEditor from './AutoConfigEditor';
 
 interface GameMetaFormProps {
   draft: GameDraft;
@@ -35,26 +38,32 @@ export default function GameMetaForm({ draft, onUpdate }: GameMetaFormProps) {
       {/* ── Step 1: Experience Style (primary selector) ───────────────────── */}
       <div className="bg-[#131313] border border-[#3a4a49]/30 rounded-2xl p-6 space-y-4">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-[#00FBFB]/60 mb-0.5">שלב 1 — סגנון החוויה</p>
-          <p className="text-xs text-[#e5e2e1]/30">בחרו את הסגנון הכללי — שאר ההגדרות ניתנות לעריכה בנפרד</p>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-[#00FBFB]/60 mb-0.5">שלב 1 — סוג המשחק</p>
+          <p className="text-xs text-[#e5e2e1]/30">בחרו סגנון — הוא ישנה אוטומטית את כל הפרמטרים שלהלן</p>
         </div>
         <div className="grid grid-cols-3 gap-3">
           {(Object.entries(EXPERIENCE_STYLE_LABELS) as [ExperienceStyle, string][]).map(([val, label]) => (
             <button
               key={val}
-              onClick={() => onUpdate({ experienceStyle: val })}
+              onClick={() => {
+                const autoConfig = getAutoConfigForStyle(val);
+                onUpdate({ experienceStyle: val, ...autoConfig });
+              }}
               className={`flex flex-col gap-1.5 p-4 rounded-xl border text-right transition-all ${
                 draft.experienceStyle === val
                   ? 'border-[#00FBFB]/50 bg-[#1a2a2a] text-[#00FBFB]'
                   : 'border-[#3a4a49]/40 text-[#e5e2e1]/50 hover:border-[#3a4a49]/80 hover:text-[#e5e2e1]/80'
               }`}
             >
-              <span className="text-lg">{styleIcon(val)}</span>
-              <span className="text-sm font-semibold leading-tight">{label}</span>
+              <span className="text-2xl">{label.split(' ')[0]}</span>
+              <span className="text-sm font-semibold leading-tight">{label.substring(label.indexOf(' ') + 1)}</span>
             </button>
           ))}
         </div>
       </div>
+
+      {/* ── Auto-config display ──────────────────────────────────────────── */}
+      <AutoConfigEditor draft={draft} onUpdate={onUpdate} />
 
       {/* ── Step 2: Secondary settings (labeled dropdowns) ───────────────── */}
       <div className="bg-[#131313] border border-[#3a4a49]/30 rounded-2xl p-6 space-y-4">
@@ -252,7 +261,7 @@ function LabeledDropdown({ label, value, options, isOpen, onToggle, onSelect }: 
 }
 
 function styleIcon(style: ExperienceStyle): string {
-  return { story: '🔭', competitive: '⚡', learning: '🧭' }[style];
+  return { story: '🔍', competitive: '⚡', learning: '🧭' }[style];
 }
 
 // ─── Media Gallery ────────────────────────────────────────────────────────────

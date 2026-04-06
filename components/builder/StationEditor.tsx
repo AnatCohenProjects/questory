@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { StationDraft, MediaItem, MediaItemType } from '@/types/builder';
 import { ChallengeData } from '@/types/challenge';
 import ChallengeModal from './ChallengeModal';
+import ImageUpload from './ImageUpload';
 
 interface StationEditorProps {
   station: StationDraft;
@@ -77,7 +78,7 @@ export default function StationEditor({ station, stationNumber, totalStations, o
 
       {/* Trigger */}
       <div className={card}>
-        <p className="text-[10px] uppercase tracking-[0.2em] text-[#00FBFB]/60">כניסה לשלב</p>
+        <p className="text-[10px] uppercase tracking-[0.2em] text-[#00FBFB]/60">כניסה לשלב <span className="text-red-400">*</span></p>
         <div>
           <label className={lbl}>סוג טריגר</label>
           <div className="flex gap-2">
@@ -123,7 +124,7 @@ export default function StationEditor({ station, stationNumber, totalStations, o
       <div className={card}>
         <p className="text-[10px] uppercase tracking-[0.2em] text-[#00FBFB]/60">תוכן</p>
         <div>
-          <label className={lbl}>נרטיב — הסיפור</label>
+          <label className={lbl}>נרטיב — הסיפור <span className="text-red-400">*</span></label>
           <textarea
             className={inp + ' resize-none'}
             rows={3}
@@ -133,7 +134,7 @@ export default function StationEditor({ station, stationNumber, totalStations, o
           />
         </div>
         <div>
-          <label className={lbl}>משימה — מה השחקנים צריכים לעשות</label>
+          <label className={lbl}>משימה — מה השחקנים צריכים לעשות <span className="text-red-400">*</span></label>
           <textarea
             className={inp + ' resize-none'}
             rows={3}
@@ -176,7 +177,7 @@ export default function StationEditor({ station, stationNumber, totalStations, o
 
       {/* Hints */}
       <div className={card}>
-        <p className="text-[10px] uppercase tracking-[0.2em] text-[#00FBFB]/60">רמזים (3 שלבים)</p>
+        <p className="text-[10px] uppercase tracking-[0.2em] text-[#00FBFB]/60">רמזים — 3 שלבים <span className="text-red-400">*</span></p>
         {(['רמז ראשון — כיווני', 'רמז שני — מפרט יותר', 'רמז שלישי — כמעט גלוי'] as const).map((placeholder, i) => (
           <div key={i}>
             <label className={lbl}>רמז {i + 1}</label>
@@ -231,7 +232,7 @@ export default function StationEditor({ station, stationNumber, totalStations, o
 
       {/* Answer */}
       <div className={card}>
-        <p className="text-[10px] uppercase tracking-[0.2em] text-[#00FBFB]/60">תשובה</p>
+        <p className="text-[10px] uppercase tracking-[0.2em] text-[#00FBFB]/60">תשובה <span className="text-red-400">*</span></p>
         <div>
           <label className={lbl}>קוד תשובה נכון</label>
           <input

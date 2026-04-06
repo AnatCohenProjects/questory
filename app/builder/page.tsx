@@ -78,6 +78,57 @@ export default function BuilderPage() {
     window.open('/play/preview', '_blank');
   };
 
+  const handleLoadDemoGame = async () => {
+    try {
+      const res = await fetch('/api/load-jekron');
+      const data = await res.json();
+      if (data.success) {
+        localStorage.setItem('questory_preview_game', JSON.stringify(data.game));
+        window.open('/play/preview', '_blank');
+      }
+    } catch (error) {
+      alert('שגיאה בטעינת המשחק');
+    }
+  };
+
+  const handleLoadCustomGame = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      const game = JSON.parse(text);
+
+      // Convert Game to GameDraft
+      const draft: GameDraft = {
+        title: game.title || '',
+        story: game.story || '',
+        experienceStyle: 'story',
+        duration: game.duration || '45 דקות',
+        difficulty: game.difficulty || 'בינוני',
+        audience: 'משפחות',
+        progressionType: 'ליניארי',
+        media: [],
+        character: game.character || { name: '', tone: '' },
+        stations: (game.stations || []).map((s: any) => ({
+          id: s.id || 0,
+          triggerType: s.triggerType || 'code',
+          triggerValue: s.triggerValue || '',
+          navigationHint: s.navigationHint || '',
+          narrative: s.narrative || '',
+          task: s.task || '',
+          hints: s.hints as [string, string, string] || ['', '', ''],
+          answer: s.answer || '',
+          challenge: s.challenge,
+          media: s.media || [],
+        })),
+      };
+
+      setDraft(draft);
+      setActive({ type: 'meta' });
+      alert('משחק נטען בהצלחה! עכשיו אתה יכול לערוך אותו בבנאי');
+    } catch (error) {
+      alert('שגיאה: וודאו שיש JSON תקין ב-clipboard');
+    }
+  };
+
   const handleExport = () => {
     navigator.clipboard.writeText(JSON.stringify(draftToGame(draft), null, 2));
     alert('JSON הועתק ללוח');
@@ -99,6 +150,18 @@ export default function BuilderPage() {
           <span className="text-[#e5e2e1]/40 text-xs uppercase tracking-widest">Builder</span>
         </div>
         <div className="flex items-center gap-3">
+          <button
+            onClick={handleLoadDemoGame}
+            className="text-[#e9c349] text-sm px-4 py-2 rounded-lg border border-[#e9c349]/30 hover:border-[#e9c349]/60 transition-colors font-semibold"
+          >
+            📂 טען דיכרון יעקב
+          </button>
+          <button
+            onClick={handleLoadCustomGame}
+            className="text-[#00FBFB]/60 text-sm px-4 py-2 rounded-lg border border-[#00FBFB]/30 hover:border-[#00FBFB]/60 hover:text-[#00FBFB] transition-colors"
+          >
+            📋 הדבק משחק
+          </button>
           <button
             onClick={handlePreview}
             disabled={draft.stations.length === 0}
