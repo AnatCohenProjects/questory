@@ -132,6 +132,22 @@ export default function GameMetaForm({ draft, onUpdate }: GameMetaFormProps) {
             onChange={e => onUpdate({ story: e.target.value })}
           />
         </div>
+        <div>
+          <label className={lbl}>תמונה ראשית</label>
+          <ImageUpload
+            currentUrl={draft.media?.[0]?.url}
+            onImageChange={(url) => {
+              const newMedia = draft.media || [];
+              if (newMedia[0]) {
+                newMedia[0] = { ...newMedia[0], url };
+              } else {
+                newMedia[0] = { id: 'game-hero', type: 'image', url, caption: '' };
+              }
+              onUpdate({ media: newMedia });
+            }}
+            label="תמונת כותרת"
+          />
+        </div>
       </div>
 
       {/* ── Experience-level media ────────────────────────────────────────── */}

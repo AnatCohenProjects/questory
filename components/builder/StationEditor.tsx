@@ -148,30 +148,43 @@ export default function StationEditor({ station, stationNumber, totalStations, o
       {/* Step media */}
       <div className={card}>
         <div>
-          <p className="text-[10px] uppercase tracking-[0.2em] text-[#00FBFB]/60 mb-1">מדיה לשלב</p>
-          <p className="text-xs text-[#e5e2e1]/30 mb-4">תמונה, וידאו, אודיו או טקסט שישמשו בשלב זה</p>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-[#00FBFB]/60 mb-4">מדיה לשלב</p>
         </div>
-        <div className="space-y-3">
-          {station.media.map(item => (
-            <StepMediaRow
-              key={item.id}
-              item={item}
-              onUpdate={updates => updateMedia(item.id, updates)}
-              onRemove={() => removeMedia(item.id)}
-            />
-          ))}
-          <div className="flex gap-2 flex-wrap">
-            {(['image', 'video', 'audio', 'text'] as MediaItemType[]).map(type => (
-              <button
-                key={type}
-                onClick={() => addMedia(type)}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-dashed border-[#3a4a49]/50 text-[#e5e2e1]/40 text-xs hover:border-[#00FBFB]/30 hover:text-[#00FBFB]/60 transition-colors"
-              >
-                <span>{mediaIcon(type)}</span>
-                <span>+ {mediaLabel(type)}</span>
-              </button>
-            ))}
-          </div>
+
+        {/* Narrative Media */}
+        <div className="mb-6">
+          <label className={lbl}>תמונה — לנרטיב</label>
+          <ImageUpload
+            currentUrl={station.narrativeMedia?.url}
+            onImageChange={(url) => {
+              onUpdate({
+                narrativeMedia: {
+                  type: 'image',
+                  url,
+                  caption: station.narrativeMedia?.caption || '',
+                }
+              });
+            }}
+            label="תמונת סיפור"
+          />
+        </div>
+
+        {/* Task Media */}
+        <div>
+          <label className={lbl}>תמונה — למשימה</label>
+          <ImageUpload
+            currentUrl={station.taskMedia?.url}
+            onImageChange={(url) => {
+              onUpdate({
+                taskMedia: {
+                  type: 'image',
+                  url,
+                  caption: station.taskMedia?.caption || '',
+                }
+              });
+            }}
+            label="תמונת משימה"
+          />
         </div>
       </div>
 

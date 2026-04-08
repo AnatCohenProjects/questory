@@ -36,7 +36,9 @@ export interface StationDraft {
   triggerValue: string;
   navigationHint: string;
   narrative: string;
+  narrativeMedia?: { type: 'image' | 'video' | 'audio'; url: string; caption?: string };
   task: string;
+  taskMedia?: { type: 'image' | 'video' | 'audio'; url: string; caption?: string };
   hints: [string, string, string];
   answer: string;
   challenge?: ChallengeData;
@@ -74,7 +76,9 @@ export function emptyStation(id: number): StationDraft {
     triggerValue: String(id + 1),
     navigationHint: '',
     narrative: '',
+    narrativeMedia: undefined,
     task: '',
+    taskMedia: undefined,
     hints: ['', '', ''],
     answer: '',
     media: [],
@@ -160,7 +164,9 @@ export function draftToGame(draft: GameDraft): Game {
       triggerValue: s.triggerValue,
       navigationHint: s.navigationHint,
       narrative: s.narrative,
+      narrativeMedia: s.narrativeMedia,
       task: s.task,
+      taskMedia: s.taskMedia,
       hints: s.hints,
       answer: s.answer,
       challenge: s.challenge,
