@@ -28,6 +28,18 @@ export const DURATION_OPTIONS = ['30 דקות', '45 דקות', '60 דקות', '9
 export const DIFFICULTY_OPTIONS = ['קל', 'בינוני', 'מתקדם'];
 export const PROGRESSION_OPTIONS = ['ליניארי', 'פתוח', 'מרוץ'];
 
+// ─── Data Source ──────────────────────────────────────────────────────────────
+
+export interface ManualDataSource {
+  type: 'manual';
+  title: string;               // e.g., "דלת העתיקה בפינת הרחוב"
+  description: string;         // detailed physical description
+  narrative_context: string;   // historical/story context
+  keywords: string[];          // tags for AI suggestions
+}
+
+export type DataSource = ManualDataSource;  // Placeholder for future DBSource
+
 // ─── Draft types ──────────────────────────────────────────────────────────────
 
 export interface StationDraft {
@@ -54,9 +66,10 @@ export interface GameDraft {
   audience: string;
   progressionType: string;
   media: MediaItem[];
-  mapUrl?: string;
+  mapMedia?: { type: 'image' | 'video'; url: string; caption?: string };
   character: { name: string; tone: string };
   stations: StationDraft[];
+  dataSource?: DataSource;     // Content generation data source (game-level)
   // Auto-config from experience style
   aiEnabled?: boolean;
   hintsLevel?: 'low' | 'medium' | 'high';
@@ -94,9 +107,10 @@ export const defaultDraft: GameDraft = {
   audience: 'משפחות',
   progressionType: 'ליניארי',
   media: [],
-  mapUrl: '',
+  mapMedia: undefined,
   character: { name: '', tone: '' },
   stations: [],
+  dataSource: undefined,
   // Auto-config for 'story' style
   aiEnabled: true,
   hintsLevel: 'medium',

@@ -2,19 +2,52 @@
 
 import { useState, useCallback } from 'react';
 import { GameDraft, StationDraft, emptyStation, defaultDraft, draftToGame } from '@/types/builder';
+import { zichronYaakovDraft } from '@/lib/zichronYaakovDraft';
+import { Blueprint, BlueprintStation, generateBlueprint } from '@/lib/blueprintEngine';
 import SidePanel from '@/components/builder/SidePanel';
 import GameMetaForm from '@/components/builder/GameMetaForm';
 import StationEditor from '@/components/builder/StationEditor';
+import BlueprintViewer from '@/components/builder/BlueprintViewer';
 
-export type ActiveView = { type: 'meta' } | { type: 'station'; id: number };
+export type ActiveView =
+  | { type: 'meta' }
+  | { type: 'station'; id: number }
+  | { type: 'blueprint' };
 
 export default function BuilderPage() {
   // Default: open on Game Settings, not on a station
   const [draft, setDraft] = useState<GameDraft>({ ...defaultDraft, stations: [emptyStation(0)] });
   const [active, setActive] = useState<ActiveView>({ type: 'meta' });
+  const [blueprint, setBlueprint] = useState<Blueprint | null>(null);
 
   const updateDraft = useCallback((updates: Partial<GameDraft>) => {
-    setDraft(prev => ({ ...prev, ...updates }));
+    setDraft(prev => {
+      const updated = { ...prev, ...updates };
+      // Auto-generate blueprint when game settings change
+      if (updated.duration && updated.audience && updated.experienceStyle && updated.difficulty) {
+        const durationMin = parseInt(updated.duration.match(/\d+/)?.[0] || '60');
+        const difficultyMap: Record<string, 'easy' | 'medium' | 'hard'> = {
+          'קל': 'easy',
+          'בינוני': 'medium',
+          'מתקדם': 'hard',
+        };
+        const progressionMap: Record<string, 'linear' | 'open' | 'race'> = {
+          'ליניארי': 'linear',
+          'פתוח': 'open',
+          'מרוץ': 'race',
+        };
+        const newBlueprint = generateBlueprint(
+          durationMin,
+          updated.audience,
+          updated.experienceStyle,
+          difficultyMap[updated.difficulty] || 'medium',
+          progressionMap[updated.progressionType] || 'linear',
+          updated.story,
+        );
+        setBlueprint(newBlueprint);
+      }
+      return updated;
+    });
   }, []);
 
   const updateStation = useCallback((id: number, updates: Partial<StationDraft>) => {
@@ -91,6 +124,11 @@ export default function BuilderPage() {
     }
   };
 
+  const handleLoadZichronDraft = () => {
+    setDraft(zichronYaakovDraft);
+    setActive({ type: 'station', id: 0 });
+  };
+
   const handleLoadCustomGame = async () => {
     try {
       const text = await navigator.clipboard.readText();
@@ -136,6 +174,19 @@ export default function BuilderPage() {
     alert('JSON הועתק ללוח');
   };
 
+  const handleBlueprintModified = (stations: BlueprintStation[]) => {
+    if (blueprint) {
+      setBlueprint({ ...blueprint, stations });
+    }
+  };
+
+  const handleBlueprintConfirm = () => {
+    if (blueprint) {
+      // Blueprint confirmed — user can now build stations
+      setActive({ type: 'station', id: 0 });
+    }
+  };
+
   const activeStation =
     active.type === 'station'
       ? draft.stations.find(s => s.id === active.id) ?? null
@@ -153,10 +204,16 @@ export default function BuilderPage() {
         </div>
         <div className="flex items-center gap-3">
           <button
-            onClick={handleLoadDemoGame}
+            onClick={handleLoadZichronDraft}
             className="text-[#e9c349] text-sm px-4 py-2 rounded-lg border border-[#e9c349]/30 hover:border-[#e9c349]/60 transition-colors font-semibold"
           >
-            📂 טען דיכרון יעקב
+            🏛️ טען זכרון יעקב לעריכה
+          </button>
+          <button
+            onClick={handleLoadDemoGame}
+            className="text-[#e9c349]/50 text-sm px-4 py-2 rounded-lg border border-[#e9c349]/20 hover:border-[#e9c349]/40 transition-colors"
+          >
+            📂 תצוגת דמו
           </button>
           <button
             onClick={handleLoadCustomGame}
@@ -164,6 +221,14 @@ export default function BuilderPage() {
           >
             📋 הדבק משחק
           </button>
+          {blueprint && (
+            <button
+              onClick={() => setActive({ type: 'blueprint' })}
+              className="text-[#9745FF] text-sm px-4 py-2 rounded-lg border border-[#9745FF]/30 hover:border-[#9745FF]/60 transition-colors font-semibold"
+            >
+              🏗️ Blueprint
+            </button>
+          )}
           <button
             onClick={handlePreview}
             disabled={draft.stations.length === 0}
@@ -201,11 +266,19 @@ export default function BuilderPage() {
         <main className="flex-1 overflow-y-auto">
           {active.type === 'meta' ? (
             <GameMetaForm draft={draft} onUpdate={updateDraft} />
+          ) : active.type === 'blueprint' && blueprint ? (
+            <BlueprintViewer
+              blueprint={blueprint}
+              onModify={handleBlueprintModified}
+              onConfirm={handleBlueprintConfirm}
+              onCancel={() => setActive({ type: 'meta' })}
+            />
           ) : activeStation ? (
             <StationEditor
               station={activeStation}
-              stationNumber={active.id + 1}
+              stationNumber={active.type === 'station' ? active.id + 1 : 0}
               totalStations={draft.stations.length}
+              gameDataSource={draft.dataSource}
               onUpdate={(updates) => updateStation(activeStation.id, updates)}
               onRemove={() => removeStation(activeStation.id)}
             />

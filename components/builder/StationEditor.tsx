@@ -1,8 +1,11 @@
 'use client';
 
 import { useState } from 'react';
-import { StationDraft, MediaItem, MediaItemType } from '@/types/builder';
+import { StationDraft, MediaItem, MediaItemType, DataSource } from '@/types/builder';
 import { ChallengeData } from '@/types/challenge';
+import { normalizeDataSource } from '@/lib/normalization';
+import { selectPrimaryHook, LogicalHook } from '@/lib/hookDetection';
+import { buildChallengeFromTemplate, TemplateType } from '@/lib/challengeTemplates';
 import ChallengeModal from './ChallengeModal';
 import ImageUpload from './ImageUpload';
 
@@ -10,6 +13,7 @@ interface StationEditorProps {
   station: StationDraft;
   stationNumber: number;
   totalStations: number;
+  gameDataSource?: DataSource;
   onUpdate: (updates: Partial<StationDraft>) => void;
   onRemove: () => void;
 }
@@ -25,8 +29,9 @@ const challengeTypeLabel: Record<string, string> = {
   trivia: 'שאלת ידע',
 };
 
-export default function StationEditor({ station, stationNumber, totalStations, onUpdate, onRemove }: StationEditorProps) {
+export default function StationEditor({ station, stationNumber, totalStations, gameDataSource, onUpdate, onRemove }: StationEditorProps) {
   const [showChallengeModal, setShowChallengeModal] = useState(false);
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
 
   const updateHint = (i: number, val: string) => {
     const hints: [string, string, string] = [...station.hints] as [string, string, string];
@@ -51,6 +56,68 @@ export default function StationEditor({ station, stationNumber, totalStations, o
 
   const removeMedia = (id: string) => {
     onUpdate({ media: station.media.filter(m => m.id !== id) });
+  };
+
+  const hookToTemplateType = (hook: LogicalHook): TemplateType => {
+    const map: Record<LogicalHook, TemplateType> = {
+      counting: 'trivia',
+      pattern: 'pattern',
+      oddness: 'oddoneout',
+      sequence: 'pattern',
+      letters: 'cipher',
+      correlation: 'trivia',
+      classification: 'oddoneout',
+    };
+    return map[hook] ?? 'trivia';
+  };
+
+  const handleGenerateFromTemplate = () => {
+    if (!gameDataSource || gameDataSource.type !== 'manual') {
+      alert('נא הגדר מקור נתונים ראשון במסך הגדרות המשחק');
+      return;
+    }
+    const norm = normalizeDataSource(gameDataSource);
+    const primaryHook = selectPrimaryHook(norm);
+    const challengeType = primaryHook ? hookToTemplateType(primaryHook.type) : undefined;
+    const challenge = buildChallengeFromTemplate(norm, { challengeType });
+    if (!challenge) {
+      alert('לא נמצאה תבנית מתאימה — נסו להוסיף חידה ידנית.');
+      return;
+    }
+    onUpdate({ challenge, answer: challenge.solution });
+  };
+
+  const handleGenerateWithAI = async () => {
+    if (!gameDataSource || gameDataSource.type !== 'manual') {
+      alert('נא הגדר מקור נתונים ראשון במסך הגדרות המשחק');
+      return;
+    }
+    if (!station.narrative.trim() || !station.task.trim()) {
+      alert('נא למלא נרטיב ומשימה תחילה');
+      return;
+    }
+    try {
+      setIsGeneratingAI(true);
+      const norm = normalizeDataSource(gameDataSource);
+      const primaryHook = selectPrimaryHook(norm);
+      const challengeType = primaryHook ? hookToTemplateType(primaryHook.type) : 'trivia';
+      const res = await fetch('/api/generate-challenge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ context: norm, hook: primaryHook, template: { challengeType } }),
+      });
+      const data = await res.json();
+      if (data.success && data.challenge) {
+        const challenge = challengeFromAI(challengeType, data.challenge);
+        onUpdate({ challenge, answer: challenge.solution });
+      } else {
+        alert('שגיאה ב-AI: ' + (data.error || 'Unknown error'));
+      }
+    } catch (error) {
+      alert('שגיאה בתקשורת: ' + (error instanceof Error ? error.message : 'Unknown error'));
+    } finally {
+      setIsGeneratingAI(false);
+    }
   };
 
   return (
@@ -231,13 +298,30 @@ export default function StationEditor({ station, stationNumber, totalStations, o
             </div>
           </div>
         ) : (
-          <div>
-            <p className="text-[#e5e2e1]/30 text-sm mb-4">אתגר אינטראקטיבי הוא אופציונלי — אפשר להשתמש בו במקום או בנוסף לשאלת הטקסט.</p>
+          <div className="space-y-3">
+            <p className="text-[#e5e2e1]/30 text-sm">אתגר אינטראקטיבי הוא אופציונלי — אפשר להשתמש בו במקום או בנוסף לשאלת הטקסט.</p>
+            {gameDataSource?.type === 'manual' && (
+              <>
+                <button
+                  onClick={handleGenerateFromTemplate}
+                  className="w-full py-3 rounded-xl bg-[#00FBFB]/10 border border-[#00FBFB]/30 text-[#00FBFB] text-sm font-semibold hover:border-[#00FBFB]/60 hover:bg-[#00FBFB]/20 transition-colors"
+                >
+                  ⚡ צור מתבנית (מיידי)
+                </button>
+                <button
+                  onClick={handleGenerateWithAI}
+                  disabled={isGeneratingAI}
+                  className="w-full py-3 rounded-xl bg-[#7c3aed]/10 border border-[#7c3aed]/30 text-[#c084fc] text-sm font-semibold hover:border-[#7c3aed]/60 hover:bg-[#7c3aed]/20 transition-colors disabled:opacity-50"
+                >
+                  {isGeneratingAI ? '⏳ מייצר עם AI...' : '🤖 צור עם AI (מותאם אישית)'}
+                </button>
+              </>
+            )}
             <button
               onClick={() => setShowChallengeModal(true)}
               className="w-full py-3 rounded-xl border border-dashed border-[#3a4a49]/60 text-[#e5e2e1]/40 text-sm hover:border-[#00FBFB]/30 hover:text-[#00FBFB]/60 transition-colors"
             >
-              + הוסף אתגר
+              + הוסף אתגר ידני
             </button>
           </div>
         )}
@@ -318,4 +402,69 @@ function mediaIcon(type: MediaItemType): string {
 
 function mediaLabel(type: MediaItemType): string {
   return { image: 'תמונה', video: 'וידאו', audio: 'אודיו', text: 'טקסט' }[type];
+}
+
+// ─── AI Challenge Converter ──────────────────────────────────────────────
+
+function challengeFromAI(challengeType: string, aiChallenge: any): ChallengeData {
+  if (challengeType === 'trivia') {
+    return {
+      type: 'trivia',
+      question: aiChallenge.question,
+      options: (aiChallenge.options || []).map((opt: any, i: number) => ({
+        id: `opt-${i}`,
+        text: typeof opt === 'string' ? opt : opt.text,
+        isCorrect: opt.isCorrect || false,
+      })),
+      solution: aiChallenge.solution,
+    };
+  }
+
+  if (challengeType === 'pattern') {
+    const series = aiChallenge.series || ['_', '_', '_'];
+    return {
+      type: 'pattern',
+      items: series.map((s: string) => s === '_' ? null : s),
+      blankCount: series.filter((s: string) => s === '_').length,
+      patternHint: aiChallenge.hints?.[0],
+      solution: aiChallenge.solution,
+    };
+  }
+
+  if (challengeType === 'oddoneout') {
+    const items = aiChallenge.items || ['Item 1', 'Item 2', 'Item 3', aiChallenge.solution];
+    return {
+      type: 'oddoneout',
+      items: items.map((item: string, i: number) => ({
+        id: `item-${i}`,
+        label: item,
+        isOdd: item === aiChallenge.solution,
+        digitContribution: item === aiChallenge.solution ? '1' : undefined,
+      })),
+      oddCount: 1,
+      groupLabel: aiChallenge.question,
+      solution: aiChallenge.solution,
+    };
+  }
+
+  if (challengeType === 'cipher') {
+    // Simplified cipher from AI response
+    return {
+      type: 'cipher',
+      key: (aiChallenge.key || []).map((entry: any) => ({
+        symbol: typeof entry === 'string' ? entry : entry.symbol,
+        digit: typeof entry === 'string' ? entry : entry.digit,
+      })),
+      encodedMessage: (aiChallenge.encodedMessage || []).map((c: string) => c),
+      solution: aiChallenge.solution,
+    };
+  }
+
+  // Default fallback
+  return {
+    type: 'trivia',
+    question: aiChallenge.question || 'What is the answer?',
+    options: [{ id: '1', text: aiChallenge.solution, isCorrect: true }],
+    solution: aiChallenge.solution || '',
+  };
 }

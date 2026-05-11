@@ -3,7 +3,10 @@
 import { useState, useRef } from 'react';
 import { GameDraft, StationDraft } from '@/types/builder';
 
-type ActiveView = { type: 'meta' } | { type: 'station'; id: number };
+type ActiveView =
+  | { type: 'meta' }
+  | { type: 'station'; id: number }
+  | { type: 'blueprint' };
 
 interface SidePanelProps {
   draft: GameDraft;

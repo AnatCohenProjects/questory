@@ -2,12 +2,13 @@
 
 import { useState } from 'react';
 import {
-  GameDraft, MediaItem, MediaItemType,
+  GameDraft, MediaItem, MediaItemType, DataSource,
   EXPERIENCE_STYLE_LABELS, ExperienceStyle,
   AUDIENCE_OPTIONS, DURATION_OPTIONS, DIFFICULTY_OPTIONS, PROGRESSION_OPTIONS,
   getAutoConfigForStyle,
 } from '@/types/builder';
 import ImageUpload from './ImageUpload';
+import DataSourceSelector from './DataSourceSelector';
 import AutoConfigEditor from './AutoConfigEditor';
 
 interface GameMetaFormProps {
@@ -168,11 +169,20 @@ export default function GameMetaForm({ draft, onUpdate }: GameMetaFormProps) {
           <p className="text-[10px] uppercase tracking-[0.2em] text-[#00FBFB]/60 mb-1">מפה</p>
           <p className="text-xs text-[#e5e2e1]/30 mb-4">העלו מפה של החוויה — לניווט, הקשר מרחבי, או חוויות מבוססות מפה בעתיד</p>
         </div>
-        <MapUpload
-          url={draft.mapUrl}
-          onChange={mapUrl => onUpdate({ mapUrl })}
+        <ImageUpload
+          currentUrl={draft.mapMedia?.url}
+          onImageChange={(url) => {
+            onUpdate({ mapMedia: { type: 'image', url, caption: '' } });
+          }}
+          label="העלאת מפה"
         />
       </div>
+
+      {/* ── Data Source (Game-level) ──────────────────────────────────────── */}
+      <DataSourceSelector
+        current={draft.dataSource}
+        onSelect={(source: DataSource) => onUpdate({ dataSource: source })}
+      />
 
       {/* ── AI Character ─────────────────────────────────────────────────── */}
       <div className={card}>
