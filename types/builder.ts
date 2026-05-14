@@ -165,10 +165,13 @@ export function getAutoConfigForStyle(style: ExperienceStyle): Partial<GameDraft
 // ─── Conversion ───────────────────────────────────────────────────────────────
 
 export function draftToGame(draft: GameDraft): Game {
+  const heroImageUrl = draft.media.find(item => item.type === 'image' && item.url?.trim())?.url?.trim();
+
   return {
     id: 'preview',
     title: draft.title || 'משחק ללא שם',
     story: draft.story,
+    imageUrl: heroImageUrl || undefined,
     duration: draft.duration,
     difficulty: draft.difficulty,
     character: { name: draft.character.name || 'מדריך', tone: draft.character.tone },

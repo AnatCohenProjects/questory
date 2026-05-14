@@ -15,11 +15,24 @@ interface StationViewProps {
 }
 
 function MediaBlock({ media }: { media: StationMedia }) {
+  const [imageFailed, setImageFailed] = useState(false);
+
   if (media.type === 'image') {
+    const imageUrl = media.url.trim();
+
+    if (!imageUrl || imageFailed) {
+      return null;
+    }
+
     return (
       <div className="rounded-xl overflow-hidden bg-[#0E0E0E]">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={media.url} alt={media.caption ?? ''} className="w-full h-auto object-contain max-h-72 rounded-xl" />
+        <img
+          src={imageUrl}
+          alt={media.caption ?? ''}
+          className="w-full h-auto object-contain max-h-72 rounded-xl"
+          onError={() => setImageFailed(true)}
+        />
         {media.caption && <p className="text-[#e5e2e1]/40 text-xs text-center px-4 py-2">{media.caption}</p>}
       </div>
     );
