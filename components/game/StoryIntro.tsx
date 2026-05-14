@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Game } from '@/types/game';
 
 interface StoryIntroProps {
@@ -10,11 +10,18 @@ interface StoryIntroProps {
 
 export default function StoryIntro({ game, onStart }: StoryIntroProps) {
   const [started, setStarted] = useState(false);
+  const [heroImageFailed, setHeroImageFailed] = useState(false);
+
+  useEffect(() => {
+    setHeroImageFailed(false);
+  }, [game.imageUrl]);
 
   const handleStart = () => {
     setStarted(true);
     onStart();
   };
+
+  const hasHeroImage = Boolean(game.imageUrl && !heroImageFailed);
 
   return (
     <div className="relative min-h-screen bg-[#0E0E0E] text-[#e5e2e1] flex flex-col items-center overflow-x-hidden" dir="rtl">
@@ -39,11 +46,12 @@ export default function StoryIntro({ game, onStart }: StoryIntroProps) {
 
         {/* Hero image */}
         <div className="relative w-full aspect-[3/4] mb-10 rounded-xl overflow-hidden shadow-[0_0_40px_rgba(0,0,0,0.8)] anim-fade-in">
-          {game.imageUrl ? (
+          {hasHeroImage ? (
             <img
               src={game.imageUrl}
               alt={game.title}
               className="w-full h-full object-cover"
+              onError={() => setHeroImageFailed(true)}
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-b from-[#1a2a2a] to-[#0E0E0E]">
