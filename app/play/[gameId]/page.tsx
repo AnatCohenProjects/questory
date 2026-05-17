@@ -33,6 +33,22 @@ type GameSnapshot = {
 
 const PLAYER_HISTORY_KEY = 'questoryPlayerHistory';
 
+function createSessionId() {
+  const browserCrypto = globalThis.crypto;
+
+  if (typeof browserCrypto?.randomUUID === 'function') {
+    return browserCrypto.randomUUID();
+  }
+
+  if (typeof browserCrypto?.getRandomValues === 'function') {
+    const values = new Uint32Array(4);
+    browserCrypto.getRandomValues(values);
+    return Array.from(values, value => value.toString(16).padStart(8, '0')).join('-');
+  }
+
+  return `session-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+}
+
 export default function GamePage({ params }: { params: Promise<{ gameId: string }> }) {
   const { gameId } = use(params);
   const [game, setGame] = useState<Game | null>(null);
@@ -136,7 +152,7 @@ export default function GamePage({ params }: { params: Promise<{ gameId: string 
   const handleStart = () => {
     if (!game) return;
     const newSession: GameSession = {
-      id: crypto.randomUUID(),
+      id: createSessionId(),
       gameId: game.id,
       groupSize: 1,
       completedStations: [],
