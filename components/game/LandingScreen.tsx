@@ -1,10 +1,15 @@
 'use client';
 
+import { Game } from '@/types/game';
+
 interface LandingScreenProps {
+  game: Game;
   onEnter: () => void;
 }
 
-export default function LandingScreen({ onEnter }: LandingScreenProps) {
+export default function LandingScreen({ game, onEnter }: LandingScreenProps) {
+  const stationCount = game.stations.length;
+  const meta = [game.duration, game.difficulty, `${stationCount} תחנות`].filter(Boolean).join(' · ');
   return (
     <div className="relative min-h-screen bg-[#0E0E0E] text-[#e5e2e1] flex flex-col items-center overflow-hidden">
 
@@ -68,17 +73,14 @@ export default function LandingScreen({ onEnter }: LandingScreenProps) {
                 className="w-full flex items-center gap-4 bg-[#131313] border border-[#3a4a49]/50 rounded-2xl p-4 active:scale-[0.98] transition-all text-right"
               >
                 <div className="w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-[#1a2a2a]">
-                  <img
-                    src="https://placehold.co/56x56/0a1a1a/00FBFB?text=★"
-                    alt="מסתורין של הכוכב האבוד"
-                    className="w-full h-full object-cover"
-                  />
+                  {game.imageUrl
+                    ? <img src={game.imageUrl} alt={game.title} className="w-full h-full object-cover" />
+                    : <div className="w-full h-full flex items-center justify-center"><span className="text-[#00FBFB] text-xl font-bold font-headline">Q</span></div>
+                  }
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-headline font-bold text-white text-sm leading-tight">
-                    מסתורין של הכוכב האבוד
-                  </p>
-                  <p className="text-[#e5e2e1]/40 text-xs mt-1">45 דקות · מתקדם · 3 תחנות</p>
+                  <p className="font-headline font-bold text-white text-sm leading-tight truncate">{game.title}</p>
+                  <p className="text-[#e5e2e1]/40 text-xs mt-1">{meta}</p>
                 </div>
                 <span className="text-[#00FBFB]/60 text-lg flex-shrink-0">←</span>
               </button>
