@@ -195,7 +195,12 @@ export default function GamePage({ params }: { params: Promise<{ gameId: string 
 
   // 1. Landing
   if (phase === 'landing') {
-    return <LandingScreen onEnter={() => navigateTo({ phase: 'intro', session: null, lastAnswer: '' })} />;
+    return (
+      <LandingScreen
+        game={game}
+        onEnter={() => navigateTo({ phase: 'intro', session: null, lastAnswer: '' })}
+      />
+    );
   }
 
   // 2. Game Intro
