@@ -7,9 +7,10 @@ interface FinalResultProps {
   gameTitle: string;
   totalStations: number;
   onRestart: () => void;
+  onBack?: () => void;
 }
 
-export default function FinalResult({ session, gameTitle, totalStations, onRestart }: FinalResultProps) {
+export default function FinalResult({ session, gameTitle, totalStations, onRestart, onBack }: FinalResultProps) {
   const completedCount = session.completedStations.length;
   const skippedCount = session.completedStations.filter(s => s.discovery === 'דולג').length;
   const solvedCount = completedCount - skippedCount;
@@ -28,6 +29,16 @@ export default function FinalResult({ session, gameTitle, totalStations, onResta
       {/* Ambient */}
       <div className="fixed top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#00FBFB]/6 rounded-full blur-[150px] pointer-events-none" />
       <div className="fixed bottom-1/4 -right-20 w-72 h-72 bg-[#e9c349]/4 rounded-full blur-[120px] pointer-events-none" />
+      {onBack && (
+        <button
+          type="button"
+          onClick={onBack}
+          aria-label="Back"
+          className="fixed top-4 right-6 z-20 w-9 h-9 rounded-full border border-[#3a4a49]/50 text-[#e5e2e1]/60 active:scale-95 transition-transform"
+        >
+          ←
+        </button>
+      )}
 
       <main className="relative z-10 flex flex-col w-full max-w-md px-6 pt-16 pb-12 gap-8">
 

@@ -5,9 +5,10 @@ interface SuccessFeedbackProps {
   totalStations: number;
   answer: string;
   onContinue: () => void;
+  onBack?: () => void;
 }
 
-export default function SuccessFeedback({ stationNumber, totalStations, answer, onContinue }: SuccessFeedbackProps) {
+export default function SuccessFeedback({ stationNumber, totalStations, answer, onContinue, onBack }: SuccessFeedbackProps) {
   const isLast = stationNumber >= totalStations;
 
   return (
@@ -15,6 +16,16 @@ export default function SuccessFeedback({ stationNumber, totalStations, answer, 
 
       {/* Glow */}
       <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-[#00FBFB]/8 rounded-full blur-[140px] pointer-events-none" />
+      {onBack && (
+        <button
+          type="button"
+          onClick={onBack}
+          aria-label="Back"
+          className="fixed top-4 right-6 z-20 w-9 h-9 rounded-full border border-[#3a4a49]/50 text-[#e5e2e1]/60 active:scale-95 transition-transform"
+        >
+          ←
+        </button>
+      )}
 
       <div className="relative z-10 flex flex-col items-center text-center max-w-sm w-full gap-8 anim-scale-in">
 

@@ -4,9 +4,10 @@ interface LocationArrivalProps {
   stationNumber: number;
   stationTitle?: string;
   onContinue: () => void;
+  onBack?: () => void;
 }
 
-export default function LocationArrival({ stationNumber, stationTitle, onContinue }: LocationArrivalProps) {
+export default function LocationArrival({ stationNumber, stationTitle, onContinue, onBack }: LocationArrivalProps) {
   return (
     <div className="min-h-screen bg-[#0E0E0E] text-[#e5e2e1] flex flex-col items-center justify-center px-6" dir="rtl">
 
@@ -16,6 +17,16 @@ export default function LocationArrival({ stationNumber, stationTitle, onContinu
       {/* Header */}
       <header className="fixed top-0 w-full z-50 flex justify-between items-center px-6 py-4 bg-[#0E0E0E]/60 backdrop-blur-xl border-b border-white/5">
         <div className="flex items-center gap-3">
+          {onBack && (
+            <button
+              type="button"
+              onClick={onBack}
+              aria-label="Back"
+              className="w-8 h-8 rounded-full border border-[#3a4a49]/50 text-[#e5e2e1]/60 active:scale-95 transition-transform"
+            >
+              ←
+            </button>
+          )}
           <div className="w-8 h-8 rounded-full border border-[#00FBFB]/30 flex items-center justify-center bg-[#131313]">
             <span className="text-[#00FBFB] text-sm font-bold font-headline">Q</span>
           </div>

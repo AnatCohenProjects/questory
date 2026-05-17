@@ -11,6 +11,7 @@ interface StationViewProps {
   game: Game;
   session: GameSession;
   onComplete: (answer: string, skipped?: boolean) => void;
+  onBack?: () => void;
   stationNumber: number;
 }
 
@@ -61,7 +62,7 @@ function MediaBlock({ media }: { media: StationMedia }) {
   return null;
 }
 
-export default function StationView({ station, game, session, onComplete, stationNumber }: StationViewProps) {
+export default function StationView({ station, game, session, onComplete, onBack, stationNumber }: StationViewProps) {
   const [showChat, setShowChat] = useState(false);
   const [answer, setAnswer] = useState('');
   const [error, setError] = useState('');
@@ -101,7 +102,19 @@ export default function StationView({ station, game, session, onComplete, statio
       {/* Header */}
       <header className="sticky top-0 z-10 bg-[#0E0E0E]/80 backdrop-blur-xl border-b border-white/5 px-6 py-3 max-w-md mx-auto w-full">
         <div className="flex items-center justify-between mb-2">
-          <span className="font-headline tracking-[0.2em] text-sm font-bold text-[#00FBFB]">QUESTORY</span>
+          <div className="flex items-center gap-3">
+            {onBack && (
+              <button
+                type="button"
+                onClick={onBack}
+                aria-label="Back"
+                className="w-8 h-8 rounded-full border border-[#3a4a49]/50 text-[#e5e2e1]/60 active:scale-95 transition-transform"
+              >
+                ←
+              </button>
+            )}
+            <span className="font-headline tracking-[0.2em] text-sm font-bold text-[#00FBFB]">QUESTORY</span>
+          </div>
           <span className="text-[10px] uppercase tracking-widest text-[#e5e2e1]/30">
             {stationNumber} / {game.stations.length}
           </span>
