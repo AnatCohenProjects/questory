@@ -107,7 +107,7 @@ export default function GamePage({ params }: { params: Promise<{ gameId: string 
 
   // 1. Landing
   if (phase === 'landing') {
-    return <LandingScreen onEnter={() => setPhase('intro')} />;
+    return <LandingScreen game={game} onEnter={() => setPhase('intro')} />;
   }
 
   // 2. Game Intro
