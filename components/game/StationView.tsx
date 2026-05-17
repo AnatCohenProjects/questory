@@ -134,6 +134,14 @@ export default function StationView({ station, game, session, onComplete, statio
           {station.narrativeMedia && <MediaBlock media={station.narrativeMedia} />}
         </div>
 
+        {/* Task media — always shown when present */}
+        {station.taskMedia && (
+          <div className="space-y-3">
+            <p className="text-[10px] uppercase tracking-[0.35em] text-[#00FBFB]/70">הוראה</p>
+            <MediaBlock media={station.taskMedia} />
+          </div>
+        )}
+
         {/* Challenge area — large and central */}
         {station.challenge && (
           <div className="space-y-5">
@@ -146,14 +154,6 @@ export default function StationView({ station, game, session, onComplete, statio
                 />
               </div>
             </div>
-          </div>
-        )}
-
-        {/* Task media (if no challenge — standalone visual) */}
-        {!station.challenge && station.taskMedia && (
-          <div className="space-y-3">
-            <p className="text-[10px] uppercase tracking-[0.35em] text-[#00FBFB]/70">הוראה</p>
-            <MediaBlock media={station.taskMedia} />
           </div>
         )}
 

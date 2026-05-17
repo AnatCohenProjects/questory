@@ -126,6 +126,7 @@ export default function GamePage({ params }: { params: Promise<{ gameId: string 
         stationNumber={session.currentStationId + 1}
         navigationHint={currentStation?.navigationHint ?? 'גשו ליעד הבא'}
         triggerType={currentStation?.triggerType ?? 'code'}
+        mapImageUrl={game.mapMedia?.url}
         onReady={() => setPhase('trigger')}
       />
     );

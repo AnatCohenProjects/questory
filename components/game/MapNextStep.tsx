@@ -4,10 +4,11 @@ interface MapNextStepProps {
   stationNumber: number;
   navigationHint: string;
   triggerType: 'code' | 'qr' | 'gps';
+  mapImageUrl?: string;
   onReady: () => void;
 }
 
-export default function MapNextStep({ stationNumber, navigationHint, triggerType, onReady }: MapNextStepProps) {
+export default function MapNextStep({ stationNumber, navigationHint, triggerType, mapImageUrl, onReady }: MapNextStepProps) {
   return (
     <div className="min-h-screen bg-[#0E0E0E] text-[#e5e2e1] flex flex-col items-center" dir="rtl">
 
@@ -30,23 +31,19 @@ export default function MapNextStep({ stationNumber, navigationHint, triggerType
           </h1>
         </div>
 
-        {/* Map placeholder */}
-        <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden border border-[#3a4a49]/40 anim-fade-up" style={{ animationDelay: '100ms' }}>
-          <img
-            src="https://placehold.co/400x300/0a1a1a/1a3a3a?text=MAP"
-            alt="מפה"
-            className="w-full h-full object-cover opacity-60"
-          />
-          {/* Destination pin */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="flex flex-col items-center gap-1">
-              <div className="w-4 h-4 rounded-full bg-[#00FBFB]" style={{ boxShadow: '0 0 20px rgba(0,251,251,0.8)' }} />
-              <div className="w-px h-8 bg-[#00FBFB]/60" />
+        {/* Map — only shown when image provided */}
+        {mapImageUrl && (
+          <div className="relative w-full aspect-[4/3] rounded-2xl overflow-hidden border border-[#3a4a49]/40 anim-fade-up" style={{ animationDelay: '100ms' }}>
+            <img src={mapImageUrl} alt="מפה" className="w-full h-full object-cover" />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="flex flex-col items-center gap-1">
+                <div className="w-4 h-4 rounded-full bg-[#00FBFB]" style={{ boxShadow: '0 0 20px rgba(0,251,251,0.8)' }} />
+                <div className="w-px h-8 bg-[#00FBFB]/60" />
+              </div>
             </div>
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0E0E0E]/60 to-transparent" />
           </div>
-          {/* Overlay gradient */}
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0E0E0E]/60 to-transparent" />
-        </div>
+        )}
 
         {/* Navigation hint */}
         <div className="bg-[#131313] border border-[#00FBFB]/15 rounded-2xl p-5 space-y-3 anim-fade-up" style={{ animationDelay: '150ms' }}>

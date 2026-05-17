@@ -11,9 +11,9 @@ interface StoryProgressionProps {
 
 // הודעות דמות לפי התקדמות
 const characterMessages = [
-  'מרשים! מצאתם את הרמז הראשון. האסטרונום היה גאה בכם. אבל המסע רק מתחיל — הסוד הגדול עדיין מחכה.',
-  'כל הכבוד! שני רמזים בידיכם. אתם קרובים יותר לפתרון ממה שאתם חושבים.',
-  'הפלתם אותי! פתרתם את כל החידות. האמת על האסטרונום הנעלם — עכשיו היא שלכם.',
+  'מרשים! פתרתם את החידה הראשונה. אבל המסע רק מתחיל — הסוד הגדול עדיין מחכה לכם.',
+  'כל הכבוד! אתם מתקדמים יפה. אתם קרובים יותר לפתרון ממה שאתם חושבים.',
+  'הפלתם אותי! פתרתם את כל החידות. עכשיו האמת כולה — שלכם.',
 ];
 
 export default function StoryProgression({ character, stationNumber, totalStations, onContinue }: StoryProgressionProps) {
@@ -68,16 +68,6 @@ export default function StoryProgression({ character, stationNumber, totalStatio
           <p className="text-[#e5e2e1]/80 text-base leading-relaxed">
             &quot;{message}&quot;
           </p>
-        </div>
-
-        {/* Scene visual */}
-        <div className="relative w-full aspect-video rounded-xl overflow-hidden border border-[#3a4a49]/30">
-          <img
-            src="https://placehold.co/400x225/0a1a1a/1a3a3a?text=+"
-            alt="scene"
-            className="w-full h-full object-cover opacity-40"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0E0E0E]/80 to-transparent" />
         </div>
 
         {/* CTA */}
