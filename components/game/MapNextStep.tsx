@@ -6,9 +6,10 @@ interface MapNextStepProps {
   triggerType: 'code' | 'qr' | 'gps';
   mapImageUrl?: string;
   onReady: () => void;
+  onBack?: () => void;
 }
 
-export default function MapNextStep({ stationNumber, navigationHint, triggerType, mapImageUrl, onReady }: MapNextStepProps) {
+export default function MapNextStep({ stationNumber, navigationHint, triggerType, mapImageUrl, onReady, onBack }: MapNextStepProps) {
   return (
     <div className="min-h-screen bg-[#0E0E0E] text-[#e5e2e1] flex flex-col items-center" dir="rtl">
 
@@ -17,7 +18,19 @@ export default function MapNextStep({ stationNumber, navigationHint, triggerType
 
       {/* Header */}
       <header className="w-full max-w-md flex justify-between items-center px-6 py-4 border-b border-white/5">
-        <span className="font-headline tracking-[0.2em] text-sm font-bold text-[#00FBFB]">QUESTORY</span>
+        <div className="flex items-center gap-3">
+          {onBack && (
+            <button
+              type="button"
+              onClick={onBack}
+              aria-label="Back"
+              className="w-9 h-9 rounded-full border border-[#3a4a49]/50 text-[#e5e2e1]/60 active:scale-95 transition-transform"
+            >
+              ←
+            </button>
+          )}
+          <span className="font-headline tracking-[0.2em] text-sm font-bold text-[#00FBFB]">QUESTORY</span>
+        </div>
         <span className="text-[10px] uppercase tracking-widest text-[#e5e2e1]/30">תחנה {stationNumber}</span>
       </header>
 

@@ -6,9 +6,10 @@ import { Game } from '@/types/game';
 interface StoryIntroProps {
   game: Game;
   onStart: () => void;
+  onBack?: () => void;
 }
 
-export default function StoryIntro({ game, onStart }: StoryIntroProps) {
+export default function StoryIntro({ game, onStart, onBack }: StoryIntroProps) {
   const [started, setStarted] = useState(false);
   const [heroImageFailed, setHeroImageFailed] = useState(false);
   const heroImageUrl = game.imageUrl?.trim();
@@ -30,6 +31,16 @@ export default function StoryIntro({ game, onStart }: StoryIntroProps) {
       {/* Header */}
       <header className="fixed top-0 w-full z-50 flex justify-between items-center px-6 py-4 bg-[#0E0E0E]/60 backdrop-blur-xl border-b border-white/5">
         <div className="flex items-center gap-3">
+          {onBack && (
+            <button
+              type="button"
+              onClick={onBack}
+              aria-label="Back"
+              className="w-8 h-8 rounded-full border border-[#3a4a49]/50 text-[#e5e2e1]/60 active:scale-95 transition-transform"
+            >
+              ←
+            </button>
+          )}
           <div className="w-8 h-8 rounded-full border border-[#00FBFB]/30 flex items-center justify-center bg-[#131313]">
             <span className="text-[#00FBFB] text-sm font-bold font-headline">Q</span>
           </div>

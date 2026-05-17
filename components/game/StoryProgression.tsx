@@ -7,6 +7,7 @@ interface StoryProgressionProps {
   stationNumber: number;
   totalStations: number;
   onContinue: () => void;
+  onBack?: () => void;
 }
 
 // הודעות דמות לפי התקדמות
@@ -16,7 +17,7 @@ const characterMessages = [
   'הפלתם אותי! פתרתם את כל החידות. עכשיו האמת כולה — שלכם.',
 ];
 
-export default function StoryProgression({ character, stationNumber, totalStations, onContinue }: StoryProgressionProps) {
+export default function StoryProgression({ character, stationNumber, totalStations, onContinue, onBack }: StoryProgressionProps) {
   const messageIndex = Math.min(stationNumber - 1, characterMessages.length - 1);
   const message = characterMessages[messageIndex];
 
@@ -25,6 +26,16 @@ export default function StoryProgression({ character, stationNumber, totalStatio
 
       {/* Ambient */}
       <div className="fixed bottom-1/3 -left-20 w-72 h-72 bg-[#00FBFB]/4 rounded-full blur-[120px] pointer-events-none" />
+      {onBack && (
+        <button
+          type="button"
+          onClick={onBack}
+          aria-label="Back"
+          className="fixed top-4 right-6 z-20 w-9 h-9 rounded-full border border-[#3a4a49]/50 text-[#e5e2e1]/60 active:scale-95 transition-transform"
+        >
+          ←
+        </button>
+      )}
 
       <div className="relative z-10 flex flex-col w-full max-w-sm gap-10 anim-fade-up">
 
