@@ -11,17 +11,18 @@ interface StoryIntroProps {
 export default function StoryIntro({ game, onStart }: StoryIntroProps) {
   const [started, setStarted] = useState(false);
   const [heroImageFailed, setHeroImageFailed] = useState(false);
+  const heroImageUrl = game.imageUrl?.trim();
 
   useEffect(() => {
     setHeroImageFailed(false);
-  }, [game.imageUrl]);
+  }, [heroImageUrl]);
 
   const handleStart = () => {
     setStarted(true);
     onStart();
   };
 
-  const hasHeroImage = Boolean(game.imageUrl && !heroImageFailed);
+  const hasHeroImage = Boolean(heroImageUrl && !heroImageFailed);
 
   return (
     <div className="relative min-h-screen bg-[#0E0E0E] text-[#e5e2e1] flex flex-col items-center overflow-x-hidden" dir="rtl">
@@ -44,30 +45,14 @@ export default function StoryIntro({ game, onStart }: StoryIntroProps) {
       {/* Main content */}
       <main className="w-full max-w-md px-6 pt-20 pb-32 flex flex-col">
 
-        {/* Hero image */}
-        <div className="relative w-full aspect-[3/4] mb-10 rounded-xl overflow-hidden shadow-[0_0_40px_rgba(0,0,0,0.8)] anim-fade-in">
-          {hasHeroImage ? (
+        {hasHeroImage && (
+          <div className="relative w-full aspect-[3/4] mb-10 rounded-xl overflow-hidden shadow-[0_0_40px_rgba(0,0,0,0.8)] anim-fade-in">
             <img
-              src={game.imageUrl}
+              src={heroImageUrl}
               alt={game.title}
               className="w-full h-full object-cover"
               onError={() => setHeroImageFailed(true)}
             />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-b from-[#1a2a2a] to-[#0E0E0E]">
-              <div className="absolute inset-0 opacity-20"
-                style={{
-                  backgroundImage:
-                    'radial-gradient(1px 1px at 20% 30%, #00FBFB, transparent),' +
-                    'radial-gradient(1px 1px at 60% 15%, white, transparent),' +
-                    'radial-gradient(1.5px 1.5px at 80% 55%, #00FBFB, transparent),' +
-                    'radial-gradient(1px 1px at 40% 70%, white, transparent),' +
-                    'radial-gradient(1px 1px at 10% 85%, white, transparent),' +
-                    'radial-gradient(1.5px 1.5px at 70% 80%, #00FBFB, transparent)',
-                }}
-              />
-            </div>
-          )}
 
           {/* Gradient overlay */}
           <div className="absolute inset-0"
@@ -89,7 +74,8 @@ export default function StoryIntro({ game, onStart }: StoryIntroProps) {
               </div>
             )}
           </div>
-        </div>
+          </div>
+        )}
 
         {/* Title + Story */}
         <div className="flex flex-col gap-5 anim-fade-up" style={{ animationDelay: '100ms' }}>
