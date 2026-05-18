@@ -49,13 +49,13 @@ export default function LandingScreen({ game, onEnter }: LandingScreenProps) {
                 חוויות אינטראקטיביות בעולם האמיתי
               </p>
               <h1 className="font-headline text-5xl font-bold leading-none tracking-tight text-white">
-                גלו סיפורים<br />
+                הפכו למשתתפים<br />
                 <span className="text-[#00FBFB]" style={{ textShadow: '0 0 30px rgba(0,251,251,0.4)' }}>
-                  שמחכים לכם.
+                  בתוך הסיפור.
                 </span>
               </h1>
               <p className="text-[#e5e2e1]/50 text-base leading-relaxed font-light">
-                משחקי הרפתקה המשלבים חידות, סיפור וחקירה בשטח.
+                פתרו חידות, גלו רמזים וחקרו את העולם האמיתי דרך המשחק.
               </p>
             </div>
 
