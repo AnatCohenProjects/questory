@@ -12,17 +12,9 @@ interface StoryProgressionProps {
 
 // הודעות דמות לפי התקדמות
 const characterMessages = [
-<<<<<<< Updated upstream
   'מרשים! פתרתם את החידה הראשונה. אבל המסע רק מתחיל — הסוד הגדול עדיין מחכה לכם.',
   'כל הכבוד! אתם מתקדמים יפה. אתם קרובים יותר לפתרון ממה שאתם חושבים.',
   'הפלתם אותי! פתרתם את כל החידות. עכשיו האמת כולה — שלכם.',
-=======
-
-  'מרשים! פתרתם את החידה הראשונה. אבל המסע רק מתחיל — הסוד הגדול עדיין מחכה לכם.',
-  'כל הכבוד! אתם מתקדמים יפה. אתם קרובים יותר לפתרון ממה שאתם חושבים.',
-  'הפלתם אותי! פתרתם את כל החידות. עכשיו האמת כולה — שלכם.',
-
->>>>>>> Stashed changes
 ];
 
 export default function StoryProgression({ character, stationNumber, totalStations, onContinue, onBack }: StoryProgressionProps) {
