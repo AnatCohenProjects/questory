@@ -12,9 +12,9 @@ interface StoryProgressionProps {
 
 // הודעות דמות לפי התקדמות
 const characterMessages = [
-  'מרשים! מצאתם את הרמז הראשון. האסטרונום היה גאה בכם. אבל המסע רק מתחיל — הסוד הגדול עדיין מחכה.',
+  'מרשים! מצאתם את הרמז הראשון. האסטרונום היה גאה בכם. אבל המסע רק מתחיל. הסוד הגדול עדיין מחכה.',
   'כל הכבוד! שני רמזים בידיכם. אתם קרובים יותר לפתרון ממה שאתם חושבים.',
-  'הפלתם אותי! פתרתם את כל החידות. האמת על האסטרונום הנעלם — עכשיו היא שלכם.',
+  'הפלתם אותי! פתרתם את כל החידות. האמת על האסטרונום הנעלם עכשיו שלכם.',
 ];
 
 export default function StoryProgression({ character, stationNumber, totalStations, onContinue, onBack }: StoryProgressionProps) {
@@ -33,7 +33,7 @@ export default function StoryProgression({ character, stationNumber, totalStatio
           aria-label="Back"
           className="fixed top-4 right-6 z-20 w-9 h-9 rounded-full border border-[#3a4a49]/50 text-[#e5e2e1]/60 active:scale-95 transition-transform"
         >
-          ←
+          →
         </button>
       )}
 
@@ -96,7 +96,7 @@ export default function StoryProgression({ character, stationNumber, totalStatio
           onClick={onContinue}
           className="w-full bg-[#1a2a2a] border border-[#00FBFB]/30 text-[#00FBFB] font-headline font-bold text-base tracking-[0.3em] uppercase py-5 rounded-xl active:scale-[0.98] transition-all"
         >
-          {stationNumber >= totalStations ? 'לסיכום הסופי →' : 'המשיכו להרפתקה →'}
+          {stationNumber >= totalStations ? 'לסיכום הסופי ←' : 'המשיכו להרפתקה ←'}
         </button>
 
       </div>

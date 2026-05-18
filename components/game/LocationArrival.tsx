@@ -24,7 +24,7 @@ export default function LocationArrival({ stationNumber, stationTitle, onContinu
               aria-label="Back"
               className="w-8 h-8 rounded-full border border-[#3a4a49]/50 text-[#e5e2e1]/60 active:scale-95 transition-transform"
             >
-              ←
+              →
             </button>
           )}
           <div className="w-8 h-8 rounded-full border border-[#00FBFB]/30 flex items-center justify-center bg-[#131313]">
@@ -71,7 +71,7 @@ export default function LocationArrival({ stationNumber, stationTitle, onContinu
         {/* Description */}
         <div className="bg-[#131313] border border-[#3a4a49]/50 rounded-2xl px-6 py-5">
           <p className="text-[#e5e2e1]/60 text-sm leading-relaxed">
-            החידה הבאה נגלית לפניכם. קראו בעיון והכינו את עצמכם — ההרפתקה ממשיכה.
+            החידה הבאה נגלית לפניכם. קראו בעיון והכינו את עצמכם. ההרפתקה ממשיכה.
           </p>
         </div>
 
@@ -83,7 +83,7 @@ export default function LocationArrival({ stationNumber, stationTitle, onContinu
             style={{ boxShadow: '0 0 20px rgba(0,251,251,0.08)' }}
           >
             <span>המשיכו</span>
-            <span className="text-base">→</span>
+            <span className="text-base">←</span>
           </button>
           <button className="text-[#e5e2e1]/25 text-xs uppercase tracking-widest py-2">
             סרוק שוב

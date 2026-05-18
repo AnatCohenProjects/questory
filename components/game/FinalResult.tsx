@@ -36,7 +36,7 @@ export default function FinalResult({ session, gameTitle, totalStations, onResta
           aria-label="Back"
           className="fixed top-4 right-6 z-20 w-9 h-9 rounded-full border border-[#3a4a49]/50 text-[#e5e2e1]/60 active:scale-95 transition-transform"
         >
-          ←
+          →
         </button>
       )}
 

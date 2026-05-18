@@ -77,7 +77,7 @@ export default function StationView({ station, game, session, onComplete, onBack
     if (answer.trim().toUpperCase() === station.answer.toUpperCase()) {
       onComplete(answer.trim());
     } else {
-      setError('לא נכון — נסו שוב');
+      setError('לא נכון. נסו שוב');
       setSubmitting(false);
     }
   };
@@ -110,7 +110,7 @@ export default function StationView({ station, game, session, onComplete, onBack
                 aria-label="Back"
                 className="w-8 h-8 rounded-full border border-[#3a4a49]/50 text-[#e5e2e1]/60 active:scale-95 transition-transform"
               >
-                ←
+                →
               </button>
             )}
             <span className="font-headline tracking-[0.2em] text-sm font-bold text-[#00FBFB]">QUESTORY</span>
@@ -132,7 +132,7 @@ export default function StationView({ station, game, session, onComplete, onBack
         {/* Stage label + Title */}
         <div className="space-y-2">
           <p className="text-[10px] uppercase tracking-[0.35em] text-[#00FBFB]/70">
-            תחנה {stationNumber.toString().padStart(2, '0')} — {game.title}
+            תחנה {stationNumber.toString().padStart(2, '0')} | {game.title}
           </p>
           <h1 className="font-headline text-2xl font-bold tracking-tight text-white leading-snug">
             {station.task}
@@ -235,7 +235,7 @@ export default function StationView({ station, game, session, onComplete, onBack
           className="w-full bg-[#1a2a2a] border border-[#00FBFB]/30 text-[#00FBFB] font-headline font-bold text-base tracking-[0.4em] uppercase py-5 rounded-xl active:scale-[0.98] transition-all disabled:opacity-25 flex items-center justify-center gap-3"
           style={answer.trim() ? { boxShadow: '0 0 20px rgba(0,251,251,0.08)' } : undefined}
         >
-          {submitting ? 'בודק...' : <><span>פתח</span><span>→</span></>}
+          {submitting ? 'בודק...' : <><span>פתח</span><span>←</span></>}
         </button>
 
         {/* Hint button */}

@@ -62,7 +62,7 @@ export default function TriviaChallenge({ challenge, onCodeChange }: TriviaChall
         </p>
       )}
       {selected && !revealed && (
-        <p className="text-red-400 text-sm text-center">לא נכון — נסו שוב</p>
+        <p className="text-red-400 text-sm text-center">לא נכון. נסו שוב</p>
       )}
     </div>
   );

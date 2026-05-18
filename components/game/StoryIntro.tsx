@@ -38,7 +38,7 @@ export default function StoryIntro({ game, onStart, onBack }: StoryIntroProps) {
               aria-label="Back"
               className="w-8 h-8 rounded-full border border-[#3a4a49]/50 text-[#e5e2e1]/60 active:scale-95 transition-transform"
             >
-              ←
+              →
             </button>
           )}
           <div className="w-8 h-8 rounded-full border border-[#00FBFB]/30 flex items-center justify-center bg-[#131313]">
@@ -115,7 +115,7 @@ export default function StoryIntro({ game, onStart, onBack }: StoryIntroProps) {
                 "{game.character.tone}"
               </p>
               <span className="block mt-1.5 text-[10px] uppercase tracking-widest text-[#e5e2e1]/30">
-                — {game.character.name}
+                {game.character.name}
               </span>
             </div>
           </div>

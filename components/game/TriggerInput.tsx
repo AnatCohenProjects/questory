@@ -54,7 +54,7 @@ export default function TriggerInput({
     if (code.toUpperCase() === expectedCode.toUpperCase()) {
       onSuccess();
     } else {
-      setError('קוד שגוי — נסו שוב');
+      setError('קוד שגוי. נסו שוב');
       setDigits(Array(digitCount).fill(''));
       setLoading(false);
     }
@@ -77,7 +77,7 @@ export default function TriggerInput({
               aria-label="Back"
               className="w-8 h-8 rounded-full border border-[#3a4a49]/50 text-[#e5e2e1]/60 active:scale-95 transition-transform"
             >
-              ←
+              →
             </button>
           )}
           <div className="w-8 h-8 rounded-full border border-[#00FBFB]/30 flex items-center justify-center bg-[#131313]">
@@ -165,7 +165,7 @@ export default function TriggerInput({
                     ) : isActive ? (
                       <span className="w-0.5 h-8 bg-[#00FBFB] animate-pulse" />
                     ) : (
-                      <span className="font-headline text-4xl font-light text-[#e5e2e1]/15">—</span>
+                      <span className="font-headline text-4xl font-light text-[#e5e2e1]/15">•</span>
                     )}
                   </div>
                 );

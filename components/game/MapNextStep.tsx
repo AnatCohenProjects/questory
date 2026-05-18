@@ -25,7 +25,7 @@ export default function MapNextStep({ stationNumber, navigationHint, triggerType
               aria-label="Back"
               className="w-9 h-9 rounded-full border border-[#3a4a49]/50 text-[#e5e2e1]/60 active:scale-95 transition-transform"
             >
-              ←
+              →
             </button>
           )}
           <span className="font-headline tracking-[0.2em] text-sm font-bold text-[#00FBFB]">QUESTORY</span>
@@ -93,8 +93,8 @@ export default function MapNextStep({ stationNumber, navigationHint, triggerType
             className="w-full bg-[#1a2a2a] border border-[#00FBFB]/30 text-[#00FBFB] font-headline font-bold text-base tracking-[0.3em] uppercase py-5 rounded-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3"
             style={{ boxShadow: '0 0 20px rgba(0,251,251,0.07)' }}
           >
-            <span>הגעתי — מוכן</span>
-            <span>→</span>
+            <span>הגעתי, מוכן</span>
+            <span>←</span>
           </button>
         </div>
 

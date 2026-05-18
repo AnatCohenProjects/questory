@@ -23,7 +23,7 @@ export default function SuccessFeedback({ stationNumber, totalStations, answer, 
           aria-label="Back"
           className="fixed top-4 right-6 z-20 w-9 h-9 rounded-full border border-[#3a4a49]/50 text-[#e5e2e1]/60 active:scale-95 transition-transform"
         >
-          ←
+          →
         </button>
       )}
 
@@ -82,7 +82,7 @@ export default function SuccessFeedback({ stationNumber, totalStations, answer, 
           className="w-full bg-[#1a2a2a] border border-[#00FBFB]/30 text-[#00FBFB] font-headline font-bold text-base tracking-[0.3em] uppercase py-5 rounded-xl active:scale-[0.98] transition-all"
           style={{ boxShadow: '0 0 20px rgba(0,251,251,0.08)' }}
         >
-          {isLast ? 'לסיכום הסופי' : 'המשיכו →'}
+          {isLast ? 'לסיכום הסופי' : 'המשיכו ←'}
         </button>
 
       </div>
