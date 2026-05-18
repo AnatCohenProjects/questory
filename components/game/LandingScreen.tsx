@@ -17,23 +17,20 @@ export default function LandingScreen({ game, onEnter }: LandingScreenProps) {
       <div className="fixed top-1/4 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#00FBFB]/6 rounded-full blur-[140px] pointer-events-none" />
       <div className="fixed bottom-1/4 -right-20 w-72 h-72 bg-[#e9c349]/4 rounded-full blur-[120px] pointer-events-none" />
 
-      {/* Hero image — full bleed */}
-      <div className="relative w-full max-w-md aspect-[9/16] min-h-screen overflow-hidden">
-        {/* Placeholder — החלף בתמונה אמיתית */}
-        <img
-          src="https://placehold.co/430x932/0a1a1a/0a1a1a?text=+"
-          alt="Questory hero"
-          className="w-full h-full object-cover"
-        />
+      {/* Hero — full bleed with image, compact without */}
+      <div className={`relative w-full max-w-md overflow-hidden ${game.imageUrl ? 'aspect-[9/16] min-h-screen' : ''}`}>
+        {game.imageUrl && (
+          <>
+            <img src={game.imageUrl} alt={game.title} className="w-full h-full object-cover" />
+            <div
+              className="absolute inset-0"
+              style={{ background: 'linear-gradient(180deg, rgba(14,14,14,0.2) 0%, rgba(14,14,14,0.5) 40%, rgba(14,14,14,0.97) 75%, rgba(14,14,14,1) 100%)' }}
+            />
+          </>
+        )}
 
-        {/* Gradient overlay bottom */}
-        <div
-          className="absolute inset-0"
-          style={{ background: 'linear-gradient(180deg, rgba(14,14,14,0.2) 0%, rgba(14,14,14,0.5) 40%, rgba(14,14,14,0.97) 75%, rgba(14,14,14,1) 100%)' }}
-        />
-
-        {/* Content over image */}
-        <div className="absolute inset-0 flex flex-col justify-between px-6 py-12">
+        {/* Content — absolute over image when present, static otherwise */}
+        <div className={game.imageUrl ? 'absolute inset-0 flex flex-col justify-between px-6 py-12' : 'flex flex-col gap-8 px-6 py-12'}>
 
           {/* Top — logo */}
           <div className="flex items-center gap-3 anim-fade-in">
