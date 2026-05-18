@@ -2,12 +2,11 @@
 
 interface LocationArrivalProps {
   stationNumber: number;
-  stationTitle?: string;
   onContinue: () => void;
   onBack?: () => void;
 }
 
-export default function LocationArrival({ stationNumber, stationTitle, onContinue, onBack }: LocationArrivalProps) {
+export default function LocationArrival({ stationNumber, onContinue, onBack }: LocationArrivalProps) {
   return (
     <div className="min-h-screen bg-[#0E0E0E] text-[#e5e2e1] flex flex-col items-center justify-center px-6" dir="rtl">
 
@@ -56,7 +55,7 @@ export default function LocationArrival({ stationNumber, stationTitle, onContinu
             className="font-headline text-5xl font-bold text-[#00FBFB] leading-none"
             style={{ textShadow: '0 0 30px rgba(0,251,251,0.5)' }}
           >
-            {stationTitle ?? `לתחנה.`}
+            {`לתחנה ${stationNumber}.`}
           </h2>
         </div>
 

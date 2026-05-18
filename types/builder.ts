@@ -172,6 +172,7 @@ export function draftToGame(draft: GameDraft): Game {
     title: draft.title || 'משחק ללא שם',
     story: draft.story,
     imageUrl: heroImageUrl || undefined,
+    mapMedia: draft.mapMedia,
     duration: draft.duration,
     difficulty: draft.difficulty,
     character: { name: draft.character.name || 'מדריך', tone: draft.character.tone },

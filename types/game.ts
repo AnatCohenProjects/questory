@@ -5,6 +5,7 @@ export type Game = {
   title: string;
   story: string;
   imageUrl?: string;
+  mapMedia?: StationMedia;
   duration?: string;    // e.g. '60 דקות'
   difficulty?: string;  // e.g. 'מתקדם'
   stations: Station[];
