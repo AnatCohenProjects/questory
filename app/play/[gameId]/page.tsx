@@ -256,9 +256,9 @@ export default function GamePage({ params }: { params: Promise<{ gameId: string 
     return (
       <MapNextStep
         stationNumber={session.currentStationId + 1}
-        navigationHint={currentStation?.navigationHint ?? 'גשו ליעד הבא'}
+        totalStations={game.stations.length}
+        navigationHint={currentStation?.navigationHint}
         triggerType={currentStation?.triggerType ?? 'code'}
-        mapImageUrl={game.mapMedia?.url}
         onReady={() => navigateTo({ phase: 'trigger', session, lastAnswer })}
         onBack={historyIndex > 0 ? goBack : undefined}
       />
