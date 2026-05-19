@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { GameDraft, StationDraft, emptyStation, defaultDraft, draftToGame } from '@/types/builder';
 import { zichronYaakovDraft } from '@/lib/zichronYaakovDraft';
 import { Blueprint, BlueprintStation, generateBlueprint } from '@/lib/blueprintEngine';
@@ -15,8 +15,12 @@ export type ActiveView =
   | { type: 'blueprint' };
 
 export default function BuilderPage() {
-  // Default: open on Game Settings, not on a station
-  const [draft, setDraft] = useState<GameDraft>({ ...defaultDraft, stations: [emptyStation(0)] });
+  const [draft, setDraft] = useState<GameDraft>(() => {
+    if (typeof window === 'undefined') return { ...defaultDraft, stations: [emptyStation(0)] };
+    const saved = localStorage.getItem('questory_builder_draft');
+    if (saved) try { return JSON.parse(saved) as GameDraft; } catch {}
+    return { ...defaultDraft, stations: [emptyStation(0)] };
+  });
   const [active, setActive] = useState<ActiveView>({ type: 'meta' });
   const [blueprint, setBlueprint] = useState<Blueprint | null>(null);
 
@@ -49,6 +53,10 @@ export default function BuilderPage() {
       return updated;
     });
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem('questory_builder_draft', JSON.stringify(draft));
+  }, [draft]);
 
   const updateStation = useCallback((id: number, updates: Partial<StationDraft>) => {
     setDraft(prev => ({
@@ -127,6 +135,12 @@ export default function BuilderPage() {
   const handleLoadZichronDraft = () => {
     setDraft(zichronYaakovDraft);
     setActive({ type: 'station', id: 0 });
+  };
+
+  const handleNewDraft = () => {
+    localStorage.removeItem('questory_builder_draft');
+    setDraft({ ...defaultDraft, stations: [emptyStation(0)] });
+    setActive({ type: 'meta' });
   };
 
   const handleLoadCustomGame = async () => {
@@ -208,6 +222,12 @@ export default function BuilderPage() {
             className="text-[#e9c349] text-sm px-4 py-2 rounded-lg border border-[#e9c349]/30 hover:border-[#e9c349]/60 transition-colors font-semibold"
           >
             🏛️ טען זכרון יעקב לעריכה
+          </button>
+          <button
+            onClick={handleNewDraft}
+            className="text-[#e5e2e1]/30 text-sm px-3 py-2 rounded-lg border border-white/5 hover:border-white/15 hover:text-[#e5e2e1]/60 transition-colors"
+          >
+            + חדש
           </button>
           <button
             onClick={handleLoadDemoGame}
