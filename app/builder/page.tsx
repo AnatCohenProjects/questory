@@ -188,6 +188,29 @@ export default function BuilderPage() {
     alert('JSON הועתק ללוח');
   };
 
+  const handleExportDraft = () => {
+    navigator.clipboard.writeText(JSON.stringify(draft, null, 2));
+    alert('טיוטה מלאה הועתקה ללוח — שלחי לקלוד לעדכון הקובץ');
+  };
+
+  const handleSaveAsZichron = async () => {
+    try {
+      const res = await fetch('/api/save-draft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(draft),
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert('✅ נשמר! "טען זכרון יעקב" יטען עכשיו את הגרסה הזו.');
+      } else {
+        alert('שגיאה: ' + data.error);
+      }
+    } catch (error) {
+      alert('שגיאה בשמירה');
+    }
+  };
+
   const handleBlueprintModified = (stations: BlueprintStation[]) => {
     if (blueprint) {
       setBlueprint({ ...blueprint, stations });
@@ -255,6 +278,18 @@ export default function BuilderPage() {
             className="text-[#e5e2e1]/60 text-sm px-4 py-2 rounded-lg border border-white/10 hover:border-white/20 hover:text-[#e5e2e1] transition-colors disabled:opacity-30"
           >
             תצוגה מקדימה ↗
+          </button>
+          <button
+            onClick={handleSaveAsZichron}
+            className="text-[#9745FF] text-sm px-4 py-2 rounded-lg border border-[#9745FF]/30 hover:border-[#9745FF]/60 transition-colors font-semibold"
+          >
+            💾 שמור כזכרון יעקב
+          </button>
+          <button
+            onClick={handleExportDraft}
+            className="text-[#e9c349]/70 text-sm px-4 py-2 rounded-lg border border-[#e9c349]/20 hover:border-[#e9c349]/50 transition-colors"
+          >
+            יצא טיוטה
           </button>
           <button
             onClick={handleExport}
