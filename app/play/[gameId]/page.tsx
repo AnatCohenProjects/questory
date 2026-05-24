@@ -32,6 +32,7 @@ type GameSnapshot = {
 };
 
 const PLAYER_HISTORY_KEY = 'questoryPlayerHistory';
+const DEFAULT_PLAYER_CHARACTER_NAME = 'המדריך';
 
 function createSessionId() {
   const browserCrypto = globalThis.crypto;
@@ -47,6 +48,22 @@ function createSessionId() {
   }
 
   return `session-${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+}
+
+function withPlayerCharacterDefaults(game: Game): Game {
+  const characterName = game.character?.name?.trim();
+
+  if (characterName && characterName !== 'מדריך') {
+    return game;
+  }
+
+  return {
+    ...game,
+    character: {
+      ...game.character,
+      name: DEFAULT_PLAYER_CHARACTER_NAME,
+    },
+  };
 }
 
 export default function GamePage({ params }: { params: Promise<{ gameId: string }> }) {
@@ -111,12 +128,12 @@ export default function GamePage({ params }: { params: Promise<{ gameId: string 
     if (gameId === 'preview') {
       const stored = localStorage.getItem('questory_preview_game');
       if (stored) {
-        try { setGame(JSON.parse(stored)); } catch { setGame(sampleGame); }
+        try { setGame(withPlayerCharacterDefaults(JSON.parse(stored))); } catch { setGame(withPlayerCharacterDefaults(sampleGame)); }
       } else {
-        setGame(sampleGame);
+        setGame(withPlayerCharacterDefaults(sampleGame));
       }
     } else {
-      setGame(sampleGame);
+      setGame(withPlayerCharacterDefaults(sampleGame));
     }
   }, [gameId]);
 
@@ -239,9 +256,9 @@ export default function GamePage({ params }: { params: Promise<{ gameId: string 
     return (
       <MapNextStep
         stationNumber={session.currentStationId + 1}
-        navigationHint={currentStation?.navigationHint ?? 'גשו ליעד הבא'}
+        totalStations={game.stations.length}
+        navigationHint={currentStation?.navigationHint}
         triggerType={currentStation?.triggerType ?? 'code'}
-        mapImageUrl={game.mapMedia?.url}
         onReady={() => navigateTo({ phase: 'trigger', session, lastAnswer })}
         onBack={historyIndex > 0 ? goBack : undefined}
       />
