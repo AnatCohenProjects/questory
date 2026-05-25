@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Station, Game, GameSession, StationMedia } from '@/types/game';
 import AIHintChat from './AIHintChat';
 import GameProgress from './GameProgress';
@@ -14,6 +14,9 @@ interface StationViewProps {
   onBack?: () => void;
   stationNumber: number;
 }
+
+const EMPTY_ANSWER_MESSAGE = 'הקלידו פתרון כדי להמשיך.';
+const WRONG_ANSWER_MESSAGE = 'זו לא התשובה הנכונה. נסו שוב או שאלו את המדריך.';
 
 function MediaBlock({ media }: { media: StationMedia }) {
   const [imageFailed, setImageFailed] = useState(false);
@@ -69,15 +72,25 @@ export default function StationView({ station, game, session, onComplete, onBack
   const [submitting, setSubmitting] = useState(false);
   const [hintsUsed, setHintsUsed] = useState(0);
   const [showReveal, setShowReveal] = useState(false);
+  const answerInputRef = useRef<HTMLInputElement>(null);
+  const isEmptyAnswerError = error === EMPTY_ANSWER_MESSAGE;
 
   const handleSubmitAnswer = async () => {
+    const trimmedAnswer = answer.trim();
+
+    if (!trimmedAnswer) {
+      setError(EMPTY_ANSWER_MESSAGE);
+      answerInputRef.current?.focus();
+      return;
+    }
+
     setSubmitting(true);
     setError('');
     await new Promise(r => setTimeout(r, 300));
-    if (answer.trim().toUpperCase() === station.answer.toUpperCase()) {
-      onComplete(answer.trim());
+    if (trimmedAnswer.toUpperCase() === station.answer.toUpperCase()) {
+      onComplete(trimmedAnswer);
     } else {
-      setError('לא נכון. נסו שוב');
+      setError(WRONG_ANSWER_MESSAGE);
       setSubmitting(false);
     }
   };
@@ -100,7 +113,7 @@ export default function StationView({ station, game, session, onComplete, onBack
       <div className="fixed top-1/3 -right-24 w-72 h-72 bg-[#00FBFB]/4 rounded-full blur-[120px] pointer-events-none" />
 
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-[#0E0E0E]/80 backdrop-blur-xl border-b border-white/5 px-6 py-3 max-w-md mx-auto w-full">
+      <header className="sticky top-0 z-10 bg-[#0E0E0E]/80 backdrop-blur-xl border-b border-white/5 px-6 lg:px-8 py-3 max-w-md lg:max-w-6xl mx-auto w-full">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-3">
             {onBack && (
@@ -127,10 +140,10 @@ export default function StationView({ station, game, session, onComplete, onBack
       </header>
 
       {/* Scrollable content */}
-      <div className="flex-1 flex flex-col px-6 pt-8 pb-64 gap-8 overflow-y-auto max-w-md mx-auto w-full">
+      <div className="flex-1 grid grid-cols-1 px-6 lg:px-8 pt-8 lg:pt-10 pb-8 lg:pb-12 gap-6 lg:gap-x-8 lg:gap-y-4 overflow-y-auto max-w-md lg:max-w-6xl mx-auto w-full lg:grid-cols-[minmax(0,0.95fr)_minmax(360px,0.78fr)] lg:items-start">
 
         {/* Stage label + Title */}
-        <div className="space-y-2">
+        <div className="space-y-2 lg:col-start-1 lg:row-start-1 lg:max-w-xl">
           <p className="text-[10px] uppercase tracking-[0.35em] text-[#00FBFB]/70">
             תחנה {stationNumber.toString().padStart(2, '0')} | {game.title}
           </p>
@@ -140,7 +153,7 @@ export default function StationView({ station, game, session, onComplete, onBack
         </div>
 
         {/* Narrative */}
-        <div className="space-y-4">
+        <div className="space-y-4 lg:col-start-1 lg:row-start-2 lg:max-w-xl">
           <p className="text-[#e5e2e1]/60 text-lg leading-relaxed font-light">
             {station.narrative}
           </p>
@@ -149,7 +162,7 @@ export default function StationView({ station, game, session, onComplete, onBack
 
         {/* Task media — always shown when present */}
         {station.taskMedia && (
-          <div className="space-y-3">
+          <div className="space-y-3 lg:col-start-1 lg:row-start-3 lg:max-w-xl">
             <p className="text-[10px] uppercase tracking-[0.35em] text-[#00FBFB]/70">הוראה</p>
             <MediaBlock media={station.taskMedia} />
           </div>
@@ -157,7 +170,7 @@ export default function StationView({ station, game, session, onComplete, onBack
 
         {/* Challenge area — large and central */}
         {station.challenge && (
-          <div className="space-y-5">
+          <div className="space-y-5 lg:col-start-2 lg:row-start-1">
             <p className="text-[10px] uppercase tracking-[0.35em] text-[#00FBFB]/70">האתגר</p>
             <div className="bg-[#131313] border border-[#3a4a49]/50 rounded-2xl overflow-hidden">
               <div className="p-5">
@@ -170,27 +183,88 @@ export default function StationView({ station, game, session, onComplete, onBack
           </div>
         )}
 
-        {/* Answer input — cipher or plain */}
-        {(!station.challenge || station.challenge.type === 'cipher') && (
-          <div className="space-y-3">
-            <p className="text-[10px] uppercase tracking-[0.35em] text-[#00FBFB]/70">הכניסו את הקוד</p>
+        <div className="space-y-4 lg:col-start-2 lg:row-start-2">
+          {/* Answer action */}
+          <div className="bg-[#101616] border border-[#00FBFB]/15 rounded-2xl p-5 space-y-4">
+          <div className="space-y-2">
+            <p className="font-headline text-base font-bold text-white">הפתרון שלכם</p>
+            <p className="text-[10px] uppercase tracking-[0.35em] text-[#00FBFB]/70">כתבו את הפתרון שמצאתם</p>
+            <p className="text-[#e5e2e1]/40 text-sm leading-relaxed">
+              הקלידו את המילה או הביטוי שמצאתם בתחנה.
+            </p>
+          </div>
+
+          {(!station.challenge || station.challenge.type === 'cipher') && (
             <input
+              ref={answerInputRef}
               type="text"
               value={answer}
               onChange={(e) => { setAnswer(e.target.value); setError(''); }}
               onKeyDown={(e) => e.key === 'Enter' && handleSubmitAnswer()}
-              placeholder="_ _ _ _"
-              className="w-full bg-[#131313] text-[#e5e2e1] text-2xl font-mono text-center py-5 rounded-xl border border-[#3a4a49] focus:border-[#00FBFB] outline-none placeholder:text-[#e5e2e1]/20 tracking-[0.5em]"
+              placeholder="הקלידו כאן את התשובה"
+              aria-invalid={isEmptyAnswerError || undefined}
+              className={`w-full bg-[#131313] text-[#e5e2e1] text-lg font-medium text-right py-5 px-5 rounded-xl border outline-none placeholder:text-[#e5e2e1]/25 tracking-normal transition-all ${
+                isEmptyAnswerError
+                  ? 'border-red-400/70 shadow-[0_0_18px_rgba(248,113,113,0.18)] focus:border-red-300'
+                  : 'border-[#3a4a49] focus:border-[#00FBFB]'
+              }`}
             />
-          </div>
-        )}
+          )}
 
-        {/* Error */}
-        {error && <p className="text-red-400 text-sm text-center">{error}</p>}
+          {error && <p className="text-red-400 text-sm leading-relaxed">{error}</p>}
+
+          <button
+            onClick={handleSubmitAnswer}
+            disabled={submitting}
+            className="anim-pulse-cta w-full relative overflow-hidden bg-[#1a2a2a] border border-[#00FBFB]/30 text-[#00FBFB] font-headline font-bold text-base tracking-[0.4em] uppercase py-5 rounded-xl active:scale-[0.98] transition-all disabled:opacity-25 flex items-center justify-center"
+            style={answer.trim() ? { boxShadow: '0 0 20px rgba(0,251,251,0.08)' } : undefined}
+          >
+            {answer.trim() && !submitting && (
+              <div
+                className="absolute inset-0 bg-gradient-to-r from-[#00FBFB]/0 via-[#00FBFB]/8 to-[#00FBFB]/0"
+                style={{ animation: 'shimmer 2.5s ease-in-out infinite' }}
+              />
+            )}
+            <span className="relative z-10">
+              {submitting ? 'בודק...' : 'בדיקת תשובה'}
+            </span>
+          </button>
+        </div>
+
+          <div className="bg-[#0E0E0E]/85 backdrop-blur-xl border border-[#00FBFB]/10 rounded-2xl p-5 space-y-3">
+          <button
+            onClick={() => setShowChat(true)}
+            disabled={hintsUsed >= 3}
+            className="w-full flex items-center justify-center gap-2 bg-[#131313] border border-[#00FBFB]/25 rounded-xl py-4 active:scale-[0.98] transition-all disabled:opacity-30"
+            style={hintsUsed < 3 ? { boxShadow: '0 0 15px rgba(0,251,251,0.06)' } : undefined}
+          >
+            <span className="text-lg">💬</span>
+            <span className="text-[#00FBFB] text-sm font-semibold">
+              {hintsUsed < 3 ? `שאלו את ${game.character.name}` : 'רמזים אזלו'}
+            </span>
+            {hintsUsed > 0 && (
+              <span className="bg-[#e9c349]/20 text-[#e9c349] text-xs font-bold px-2 py-0.5 rounded-full">
+                {hintsUsed}/3
+              </span>
+            )}
+          </button>
+          {hintsUsed < 3 && (
+            <p className="text-center text-[#e5e2e1]/35 text-xs leading-relaxed">
+              אפשר לבקש רמז או לשאול שאלה על המשימה.
+            </p>
+          )}
+          <button
+            onClick={() => onComplete('', true)}
+            className="w-full text-center text-[#e5e2e1]/20 text-[11px] uppercase tracking-widest hover:text-[#e5e2e1]/40 transition-colors py-1"
+          >
+            דלג על תחנה
+          </button>
+          </div>
+        </div>
 
         {/* Escape options */}
         {hintsUsed >= 3 && (
-          <div className="border border-[#3a4a49]/40 rounded-xl p-4 space-y-3">
+          <div className="border border-[#3a4a49]/40 rounded-xl p-4 space-y-3 lg:col-start-2">
             <p className="text-[#e5e2e1]/30 text-xs text-center uppercase tracking-widest">
               השתמשתם בכל הרמזים
             </p>
@@ -225,44 +299,6 @@ export default function StationView({ station, game, session, onComplete, onBack
             )}
           </div>
         )}
-      </div>
-
-      {/* Fixed bottom */}
-      <div className="fixed bottom-0 left-0 right-0 bg-[#0E0E0E]/95 backdrop-blur-xl border-t border-white/5 p-5 space-y-3 max-w-md mx-auto">
-        <button
-          onClick={handleSubmitAnswer}
-          disabled={!answer.trim() || submitting}
-          className="w-full bg-[#1a2a2a] border border-[#00FBFB]/30 text-[#00FBFB] font-headline font-bold text-base tracking-[0.4em] uppercase py-5 rounded-xl active:scale-[0.98] transition-all disabled:opacity-25 flex items-center justify-center gap-3"
-          style={answer.trim() ? { boxShadow: '0 0 20px rgba(0,251,251,0.08)' } : undefined}
-        >
-          {submitting ? 'בודק...' : <><span>פתח</span><span>←</span></>}
-        </button>
-
-        {/* Hint button */}
-        <button
-          onClick={() => setShowChat(true)}
-          disabled={hintsUsed >= 3}
-          className="w-full flex items-center justify-center gap-2 bg-[#131313] border border-[#00FBFB]/25 rounded-xl py-4 active:scale-[0.98] transition-all disabled:opacity-30"
-          style={hintsUsed < 3 ? { boxShadow: '0 0 15px rgba(0,251,251,0.06)' } : undefined}
-        >
-          <span className="text-lg">💬</span>
-          <span className="text-[#00FBFB] text-sm font-semibold">
-            {hintsUsed < 3 ? `שאל את ${game.character.name}` : 'רמזים אזלו'}
-          </span>
-          {hintsUsed > 0 && (
-            <span className="bg-[#e9c349]/20 text-[#e9c349] text-xs font-bold px-2 py-0.5 rounded-full">
-              {hintsUsed}/3
-            </span>
-          )}
-        </button>
-
-        {/* Skip */}
-        <button
-          onClick={() => onComplete('', true)}
-          className="text-center text-[#e5e2e1]/20 text-[11px] uppercase tracking-widest hover:text-[#e5e2e1]/40 transition-colors py-1"
-        >
-          דלג על תחנה
-        </button>
       </div>
 
     </div>
