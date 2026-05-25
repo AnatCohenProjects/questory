@@ -31,7 +31,7 @@ export default function MapNextStep({ stationNumber, totalStations, navigationHi
       <div className="fixed top-1/3 left-1/2 -translate-x-1/2 w-80 h-80 bg-[#00FBFB]/5 rounded-full blur-[130px] pointer-events-none" />
 
       {/* Header */}
-      <header className="w-full max-w-md flex justify-between items-center px-6 py-4 border-b border-white/5">
+      <header className="w-full max-w-md lg:max-w-6xl flex justify-between items-center px-6 lg:px-8 py-4 border-b border-white/5">
         <div className="flex items-center gap-3">
           {onBack && (
             <button
@@ -48,26 +48,28 @@ export default function MapNextStep({ stationNumber, totalStations, navigationHi
         <span className="text-[10px] uppercase tracking-widest text-[#e5e2e1]/30">תחנה {stationNumber}</span>
       </header>
 
-      <main className="flex-1 flex flex-col w-full max-w-md px-6 pt-8 pb-8 gap-6">
+      <main className="flex-1 flex flex-col w-full max-w-md lg:max-w-6xl px-6 lg:px-8 pt-8 lg:pt-10 pb-8 lg:pb-12 gap-6 lg:gap-8">
 
         {/* Label + title */}
-        <div className="space-y-2 anim-fade-up">
+        <div className="space-y-2 anim-fade-up lg:max-w-xl">
           <p className="text-[10px] uppercase tracking-[0.35em] text-[#00FBFB]/70">הצעד הבא</p>
-          <h1 className="font-headline text-4xl font-bold text-white leading-tight">
+          <h1 className="font-headline text-4xl lg:text-5xl font-bold text-white leading-tight">
             לאן ממשיכים?
           </h1>
         </div>
 
+        <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(360px,1fr)_minmax(340px,0.82fr)] lg:items-start lg:gap-8">
+
         {/* Progress path */}
-        <section className="relative overflow-hidden rounded-2xl border border-[#3a4a49]/40 bg-[#101616] px-5 py-5 anim-fade-up" style={{ animationDelay: '100ms' }}>
+        <section className="relative overflow-hidden rounded-2xl border border-[#3a4a49]/40 bg-[#101616] px-5 lg:px-7 py-5 lg:py-7 anim-fade-up lg:min-h-[460px]" style={{ animationDelay: '100ms' }}>
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(0,251,251,0.16),transparent_45%)]" />
           <div className="relative">
-            <p className="font-headline text-sm font-bold text-white mb-5">התקדמות במשחק</p>
+            <p className="font-headline text-sm lg:text-base font-bold text-white mb-5 lg:mb-7">התקדמות במשחק</p>
 
-            <div className="relative min-h-[220px]">
+            <div className="relative min-h-[220px] lg:min-h-[360px]">
               <div className="absolute right-6 top-8 bottom-8 w-px bg-[#00FBFB]/70 shadow-[0_0_18px_rgba(0,251,251,0.7)]" />
 
-              <div className="relative z-10 flex flex-col justify-between min-h-[220px]">
+              <div className="relative z-10 flex flex-col justify-between min-h-[220px] lg:min-h-[360px]">
                 <div className="flex items-center gap-4">
                   <div className="w-12 flex justify-center">
                     {previousStation ? (
@@ -133,6 +135,8 @@ export default function MapNextStep({ stationNumber, totalStations, navigationHi
           </div>
         </section>
 
+        <div className="flex flex-col gap-6 lg:pt-6">
+
         {/* Navigation hint */}
         <div className="bg-[#131313] border border-[#00FBFB]/15 rounded-2xl p-5 space-y-3 anim-fade-up" style={{ animationDelay: '150ms' }}>
           <div className="flex items-center gap-2">
@@ -168,18 +172,24 @@ export default function MapNextStep({ stationNumber, totalStations, navigationHi
         )}
 
         {/* Spacer */}
-        <div className="flex-1" />
+        <div className="flex-1 lg:hidden" />
 
         {/* CTA */}
         <div className="space-y-3 anim-scale-in" style={{ animationDelay: '200ms' }}>
           <button
             onClick={onReady}
-            className="w-full bg-[#1a2a2a] border border-[#00FBFB]/30 text-[#00FBFB] font-headline font-bold text-base tracking-[0.3em] uppercase py-5 rounded-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3"
+            className="anim-pulse-cta w-full relative overflow-hidden bg-[#1a2a2a] border border-[#00FBFB]/30 text-[#00FBFB] font-headline font-bold text-base tracking-[0.3em] uppercase py-5 rounded-xl active:scale-[0.98] transition-all flex items-center justify-center gap-3"
             style={{ boxShadow: '0 0 20px rgba(0,251,251,0.07)' }}
           >
-            <span>הגעתי לתחנה</span>
-            <span>←</span>
+            <div className="absolute inset-0 bg-gradient-to-r from-[#00FBFB]/0 via-[#00FBFB]/8 to-[#00FBFB]/0"
+              style={{ animation: 'shimmer 2.5s ease-in-out infinite' }}
+            />
+            <span className="relative z-10">הגעתי לתחנה</span>
           </button>
+        </div>
+
+        </div>
+
         </div>
 
       </main>
