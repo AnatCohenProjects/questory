@@ -87,7 +87,8 @@ export default function StationView({ station, game, session, onComplete, onBack
     setSubmitting(true);
     setError('');
     await new Promise(r => setTimeout(r, 300));
-    if (trimmedAnswer.toUpperCase() === station.answer.toUpperCase()) {
+    const accepted = station.answer.split('|').map(a => a.trim().toUpperCase());
+    if (accepted.includes(trimmedAnswer.toUpperCase())) {
       onComplete(trimmedAnswer);
     } else {
       setError(WRONG_ANSWER_MESSAGE);
@@ -107,6 +108,7 @@ export default function StationView({ station, game, session, onComplete, onBack
   }
 
   return (
+    <>
     <div className="min-h-screen bg-[#0E0E0E] text-[#e5e2e1] flex flex-col" dir="rtl">
 
       {/* Ambient glow */}
@@ -121,7 +123,7 @@ export default function StationView({ station, game, session, onComplete, onBack
                 type="button"
                 onClick={onBack}
                 aria-label="Back"
-                className="w-8 h-8 rounded-full border border-[#3a4a49]/50 text-[#e5e2e1]/60 active:scale-95 transition-transform"
+                className="w-8 h-8 rounded-full border border-[#3a4a49]/50 text-[#e5e2e1]/60 active:scale-95 transition-transform flex items-center justify-center"
               >
                 →
               </button>
@@ -190,7 +192,7 @@ export default function StationView({ station, game, session, onComplete, onBack
             <p className="font-headline text-base font-bold text-white">הפתרון שלכם</p>
             <p className="text-[10px] uppercase tracking-[0.35em] text-[#00FBFB]/70">כתבו את הפתרון שמצאתם</p>
             <p className="text-[#e5e2e1]/40 text-sm leading-relaxed">
-              הקלידו את המילה או הביטוי שמצאתם בתחנה.
+              הקלידו את התשובה.
             </p>
           </div>
 
@@ -302,5 +304,6 @@ export default function StationView({ station, game, session, onComplete, onBack
       </div>
 
     </div>
+    </>
   );
 }

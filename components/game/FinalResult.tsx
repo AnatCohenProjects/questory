@@ -1,16 +1,18 @@
 'use client';
 
-import { GameSession } from '@/types/game';
+import { GameSession, GameType } from '@/types/game';
 
 interface FinalResultProps {
   session: GameSession;
   gameTitle: string;
   totalStations: number;
+  gameType?: GameType;
   onRestart: () => void;
   onBack?: () => void;
 }
 
-export default function FinalResult({ session, gameTitle, totalStations, onRestart, onBack }: FinalResultProps) {
+export default function FinalResult({ session, gameTitle, totalStations, gameType, onRestart, onBack }: FinalResultProps) {
+  const stationsLabel = gameType === 'library' ? 'ספרים' : 'תחנות';
   const completedCount = session.completedStations.length;
   const skippedCount = session.completedStations.filter(s => s.discovery === 'דולג').length;
   const solvedCount = completedCount - skippedCount;
@@ -34,7 +36,7 @@ export default function FinalResult({ session, gameTitle, totalStations, onResta
           type="button"
           onClick={onBack}
           aria-label="Back"
-          className="fixed top-4 right-6 z-20 w-9 h-9 rounded-full border border-[#3a4a49]/50 text-[#e5e2e1]/60 active:scale-95 transition-transform"
+          className="fixed top-4 right-6 z-20 w-9 h-9 rounded-full border border-[#3a4a49]/50 text-[#e5e2e1]/60 active:scale-95 transition-transform flex items-center justify-center"
         >
           →
         </button>
@@ -62,7 +64,7 @@ export default function FinalResult({ session, gameTitle, totalStations, onResta
         {/* Stats grid */}
         <div className="grid grid-cols-3 gap-3 anim-fade-up" style={{ animationDelay: '200ms' }}>
           {[
-            { label: 'תחנות', value: `${solvedCount}/${totalStations}`, color: 'text-[#00FBFB]' },
+            { label: stationsLabel, value: `${solvedCount}/${totalStations}`, color: 'text-[#00FBFB]' },
             { label: 'רמזים', value: totalHints, color: 'text-[#e9c349]' },
             { label: 'דולגו', value: skippedCount, color: 'text-[#e5e2e1]/50' },
           ].map(({ label, value, color }) => (
@@ -76,7 +78,7 @@ export default function FinalResult({ session, gameTitle, totalStations, onResta
         {/* Station breakdown */}
         <div className="bg-[#131313] border border-[#3a4a49]/40 rounded-2xl overflow-hidden anim-fade-up" style={{ animationDelay: '250ms' }}>
           <div className="px-5 py-4 border-b border-[#3a4a49]/30">
-            <p className="text-[10px] uppercase tracking-[0.25em] text-[#00FBFB]/60">פירוט תחנות</p>
+            <p className="text-[10px] uppercase tracking-[0.25em] text-[#00FBFB]/60">פירוט {stationsLabel}</p>
           </div>
           {session.completedStations.map((s, i) => (
             <div key={s.stationId} className="flex items-center justify-between px-5 py-4 border-b border-[#3a4a49]/20 last:border-0">

@@ -1,15 +1,21 @@
 'use client';
 
+import { GameType } from '@/types/game';
+
 interface SuccessFeedbackProps {
   stationNumber: number;
   totalStations: number;
   answer: string;
+  gameType?: GameType;
   onContinue: () => void;
   onBack?: () => void;
 }
 
-export default function SuccessFeedback({ stationNumber, totalStations, answer, onContinue, onBack }: SuccessFeedbackProps) {
+export default function SuccessFeedback({ stationNumber, totalStations, answer, gameType, onContinue, onBack }: SuccessFeedbackProps) {
   const isLast = stationNumber >= totalStations;
+  const isLibrary = gameType === 'library';
+  const unitLabel = isLibrary ? 'ספרים' : 'תחנות';
+  const nextLabel = isLibrary ? 'הספר הבא מחכה' : 'התחנה הבאה מחכה';
 
   return (
     <div className="min-h-screen bg-[#0E0E0E] text-[#e5e2e1] flex flex-col items-center justify-center px-6" dir="rtl">
@@ -21,7 +27,7 @@ export default function SuccessFeedback({ stationNumber, totalStations, answer, 
           type="button"
           onClick={onBack}
           aria-label="Back"
-          className="fixed top-4 right-6 z-20 w-9 h-9 rounded-full border border-[#3a4a49]/50 text-[#e5e2e1]/60 active:scale-95 transition-transform"
+          className="fixed top-4 right-6 z-20 w-9 h-9 rounded-full border border-[#3a4a49]/50 text-[#e5e2e1]/60 active:scale-95 transition-transform flex items-center justify-center"
         >
           →
         </button>
@@ -40,15 +46,13 @@ export default function SuccessFeedback({ stationNumber, totalStations, answer, 
         {/* Text */}
         <div className="space-y-3">
           <p className="text-[10px] uppercase tracking-[0.35em] text-[#00FBFB]/70">
-            {isLast ? 'משימה הושלמה' : `תחנה ${stationNumber} מתוך ${totalStations}`}
+            {isLast ? 'משימה הושלמה' : `${isLibrary ? 'ספר' : 'תחנה'} ${stationNumber} מתוך ${totalStations}`}
           </p>
           <h1 className="font-headline text-5xl font-bold text-white leading-none">
             {isLast ? 'הצלחתם!' : 'נכון!'}
           </h1>
           <p className="text-[#e5e2e1]/50 text-base leading-relaxed">
-            {isLast
-              ? 'פתרתם את כל החידות בהצלחה'
-              : 'הקוד הנכון. התחנה הבאה מחכה לכם.'}
+            {isLast ? 'פתרתם את כל החידות בהצלחה' : nextLabel}
           </p>
         </div>
 
@@ -67,7 +71,7 @@ export default function SuccessFeedback({ stationNumber, totalStations, answer, 
         <div className="flex gap-6 text-center">
           <div>
             <p className="font-headline font-bold text-2xl text-white">{stationNumber}</p>
-            <p className="text-[10px] uppercase tracking-widest text-[#e5e2e1]/30 mt-1">תחנות</p>
+            <p className="text-[10px] uppercase tracking-widest text-[#e5e2e1]/30 mt-1">{unitLabel}</p>
           </div>
           <div className="w-px bg-[#3a4a49]/40" />
           <div>
@@ -82,7 +86,7 @@ export default function SuccessFeedback({ stationNumber, totalStations, answer, 
           className="w-full bg-[#1a2a2a] border border-[#00FBFB]/30 text-[#00FBFB] font-headline font-bold text-base tracking-[0.3em] uppercase py-5 rounded-xl active:scale-[0.98] transition-all"
           style={{ boxShadow: '0 0 20px rgba(0,251,251,0.08)' }}
         >
-          {isLast ? 'לסיכום הסופי' : 'המשיכו ←'}
+          {isLast ? 'לסיכום הסופי' : 'המשיכו'}
         </button>
 
       </div>

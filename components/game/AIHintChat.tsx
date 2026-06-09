@@ -57,7 +57,7 @@ export default function AIHintChat({ game, session, onBack, onHintUsed }: AIHint
     <div className="min-h-screen bg-gray-950 text-white flex flex-col" dir="rtl">
       {/* Header */}
       <div className="bg-gray-900 px-4 py-4 flex items-center gap-3">
-        <button onClick={onBack} className="text-gray-400 text-2xl leading-none">→</button>
+        <button onClick={onBack} className="text-gray-400 text-2xl leading-none flex items-center justify-center w-8 h-8">→</button>
         <div className="w-10 h-10 rounded-full bg-amber-400 flex items-center justify-center text-gray-950 font-bold text-lg">
           {game.character.name[0]}
         </div>

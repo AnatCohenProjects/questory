@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { use } from 'react';
 import { Game, GameSession, CompletedStation } from '@/types/game';
 import { sampleGame } from '@/lib/sampleGame';
-import LandingScreen from '@/components/game/LandingScreen';
 import StoryIntro from '@/components/game/StoryIntro';
 import MapNextStep from '@/components/game/MapNextStep';
 import TriggerInput from '@/components/game/TriggerInput';
@@ -12,18 +11,22 @@ import LocationArrival from '@/components/game/LocationArrival';
 import StationView from '@/components/game/StationView';
 import SuccessFeedback from '@/components/game/SuccessFeedback';
 import StoryProgression from '@/components/game/StoryProgression';
+import TransitionRiddleView from '@/components/game/TransitionRiddleView';
+import BookRevealView from '@/components/game/BookRevealView';
 import FinalResult from '@/components/game/FinalResult';
 
 type GamePhase =
-  | 'landing'      // 1. מסך נחיתה
-  | 'intro'        // 2. הקדמה למשחק
-  | 'map'          // 3. מפה / הצעד הבא
-  | 'trigger'      // 4. הזנת קוד כניסה לתחנה
-  | 'arrival'      // 5. הגעה ליעד
-  | 'station'      // 6. חידה
-  | 'success'      // 7. משוב הצלחה
-  | 'story'        // 8. התקדמות בסיפור
-  | 'final';       // 9. מסך סיכום סופי
+  | 'landing'
+  | 'intro'
+  | 'map'
+  | 'trigger'
+  | 'arrival'
+  | 'station'
+  | 'success'
+  | 'transition_riddle'
+  | 'book_reveal'
+  | 'story'
+  | 'final';
 
 type GameSnapshot = {
   phase: GamePhase;
@@ -70,7 +73,7 @@ export default function GamePage({ params }: { params: Promise<{ gameId: string 
   const { gameId } = use(params);
   const [game, setGame] = useState<Game | null>(null);
   const [session, setSession] = useState<GameSession | null>(null);
-  const [phase, setPhase] = useState<GamePhase>('landing');
+  const [phase, setPhase] = useState<GamePhase>('intro');
   const [lastAnswer, setLastAnswer] = useState('');
   const [historyIndex, setHistoryIndex] = useState(0);
   const historyStackRef = useRef<GameSnapshot[]>([]);
@@ -160,7 +163,7 @@ export default function GamePage({ params }: { params: Promise<{ gameId: string 
     if (!game || historyReadyRef.current) return;
 
     initializeHistory({
-      phase: 'landing',
+      phase: 'intro',
       session: null,
       lastAnswer: '',
     });
@@ -183,9 +186,10 @@ export default function GamePage({ params }: { params: Promise<{ gameId: string 
     if (!game || !session) return;
 
     const currentStation = game.stations[session.currentStationId];
+    const stationLabel = game.gameType === 'library' ? 'ספר' : 'תחנה';
     const completed: CompletedStation = {
       stationId: currentStation.id,
-      name: `תחנה ${session.currentStationId + 1}`,
+      name: `${stationLabel} ${session.currentStationId + 1}`,
       discovery: skipped ? 'דולג' : answer,
       timeSpent: 0,
       hintsUsed: session.hintsUsed,
@@ -205,7 +209,16 @@ export default function GamePage({ params }: { params: Promise<{ gameId: string 
   };
 
   const handleSuccessContinue = () => {
-    navigateTo({ phase: 'story', session, lastAnswer });
+    if (!game || !session) return;
+    if (game.gameType === 'library') {
+      if (session.currentStationId >= game.stations.length) {
+        navigateTo({ phase: 'final', session, lastAnswer });
+      } else {
+        navigateTo({ phase: 'map', session, lastAnswer });
+      }
+    } else {
+      navigateTo({ phase: 'story', session, lastAnswer });
+    }
   };
 
   const handleStoryContinue = () => {
@@ -226,16 +239,6 @@ export default function GamePage({ params }: { params: Promise<{ gameId: string 
     );
   }
 
-  // 1. Landing
-  if (phase === 'landing') {
-    return (
-      <LandingScreen
-        game={game}
-        onEnter={() => navigateTo({ phase: 'intro', session: null, lastAnswer: '' })}
-      />
-    );
-  }
-
   // 2. Game Intro
   if (phase === 'intro') {
     return (
@@ -253,13 +256,23 @@ export default function GamePage({ params }: { params: Promise<{ gameId: string 
 
   // 3. Map / Next Step
   if (phase === 'map') {
+    const prevStation = session.currentStationId > 0
+      ? game.stations[session.currentStationId - 1]
+      : undefined;
+    const mapTransitionRiddle = prevStation?.transitionRiddle?.enabled
+      ? prevStation.transitionRiddle
+      : undefined;
     return (
       <MapNextStep
         stationNumber={session.currentStationId + 1}
         totalStations={game.stations.length}
         navigationHint={currentStation?.navigationHint}
+        navigationAnswer={currentStation?.navigationAnswer}
+        currentBook={currentStation?.book}
         triggerType={currentStation?.triggerType ?? 'code'}
-        onReady={() => navigateTo({ phase: 'trigger', session, lastAnswer })}
+        gameType={game.gameType}
+        transitionRiddle={mapTransitionRiddle}
+        onReady={() => navigateTo({ phase: game.gameType === 'library' ? 'arrival' : 'trigger', session, lastAnswer })}
         onBack={historyIndex > 0 ? goBack : undefined}
       />
     );
@@ -275,15 +288,22 @@ export default function GamePage({ params }: { params: Promise<{ gameId: string 
         onBack={historyIndex > 0 ? goBack : undefined}
         stationNumber={session.currentStationId + 1}
         navigationHint={currentStation.navigationHint}
+        gameType={game.gameType}
       />
     );
   }
 
   // 5. Location Arrival
   if (phase === 'arrival') {
+    const prevStation = game.stations[session.currentStationId - 1];
+    const bookTitle = prevStation?.transitionRiddle?.targetBook?.title;
+    const bookAuthor = prevStation?.transitionRiddle?.targetBook?.author;
     return (
       <LocationArrival
         stationNumber={session.currentStationId + 1}
+        gameType={game.gameType}
+        bookTitle={bookTitle}
+        bookAuthor={bookAuthor}
         onContinue={() => navigateTo({ phase: 'station', session, lastAnswer })}
         onBack={historyIndex > 0 ? goBack : undefined}
       />
@@ -311,7 +331,46 @@ export default function GamePage({ params }: { params: Promise<{ gameId: string 
         stationNumber={session.currentStationId}
         totalStations={game.stations.length}
         answer={lastAnswer}
+        gameType={game.gameType}
         onContinue={handleSuccessContinue}
+        onBack={historyIndex > 0 ? goBack : undefined}
+      />
+    );
+  }
+
+  // Transition Riddle (library mode — after station success, instead of story progression)
+  if (phase === 'transition_riddle') {
+    const justCompleted = game.stations[session.currentStationId - 1];
+    const tr = justCompleted?.transitionRiddle;
+    if (!tr) return null;
+    return (
+      <TransitionRiddleView
+        prompt={tr.prompt}
+        answer={tr.answer}
+        media={tr.media}
+        gameType={game.gameType}
+        onComplete={() => {
+          if (tr.targetBook) {
+            navigateTo({ phase: 'book_reveal', session, lastAnswer });
+          } else {
+            navigateTo({ phase: 'map', session, lastAnswer });
+          }
+        }}
+        onBack={historyIndex > 0 ? goBack : undefined}
+      />
+    );
+  }
+
+  // Book Reveal (library mode — after transition riddle)
+  if (phase === 'book_reveal') {
+    const justCompleted = game.stations[session.currentStationId - 1];
+    const targetBook = justCompleted?.transitionRiddle?.targetBook;
+    if (!targetBook) return null;
+    return (
+      <BookRevealView
+        targetBook={targetBook}
+        gameType={game.gameType}
+        onContinue={() => navigateTo({ phase: 'map', session, lastAnswer })}
         onBack={historyIndex > 0 ? goBack : undefined}
       />
     );
@@ -337,6 +396,7 @@ export default function GamePage({ params }: { params: Promise<{ gameId: string 
         session={session}
         gameTitle={game.title}
         totalStations={game.stations.length}
+        gameType={game.gameType}
         onRestart={() => navigateTo({ phase: 'landing', session: null, lastAnswer: '' })}
         onBack={historyIndex > 0 ? goBack : undefined}
       />
