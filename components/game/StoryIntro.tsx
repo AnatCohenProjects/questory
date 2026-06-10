@@ -38,7 +38,7 @@ export default function StoryIntro({ game, onStart, onBack }: StoryIntroProps) {
               type="button"
               onClick={onBack}
               aria-label="Back"
-              className="w-8 h-8 rounded-full border border-[#3a4a49]/50 text-[#e5e2e1]/60 active:scale-95 transition-transform"
+              className="w-8 h-8 rounded-full border border-[#3a4a49]/50 text-[#e5e2e1]/60 active:scale-95 transition-transform flex items-center justify-center"
             >
               →
             </button>
@@ -139,7 +139,9 @@ export default function StoryIntro({ game, onStart, onBack }: StoryIntroProps) {
           <div className="mt-5 bg-[#131313] border border-[#3a4a49]/40 rounded-xl px-4 py-4 lg:px-5">
             <p className="font-headline text-sm font-bold text-white mb-2">איך זה עובד?</p>
             <p className="text-sm leading-relaxed text-[#e5e2e1]/70">
-              מוצאים תחנה · מזינים את הקוד · פותרים משימה · ממשיכים לשלב הבא
+              {game.gameType === 'library'
+                ? 'מוצאים ספר · מזינים את הקוד · פותרים משימה · ממשיכים לשלב הבא'
+                : 'מוצאים תחנה · מזינים את הקוד · פותרים משימה · ממשיכים לשלב הבא'}
             </p>
             <p className="mt-3 text-sm leading-relaxed text-[#e5e2e1]/55">
               נתקעתם? אפשר לפתוח רמז. שימוש ברמזים עשוי להשפיע על הניקוד.

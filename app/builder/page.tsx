@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { GameDraft, StationDraft, emptyStation, defaultDraft, draftToGame } from '@/types/builder';
 import { zichronYaakovDraft } from '@/lib/zichronYaakovDraft';
+import { libraryDraft } from '@/lib/libraryDraft';
 import { Blueprint, BlueprintStation, generateBlueprint } from '@/lib/blueprintEngine';
 import SidePanel from '@/components/builder/SidePanel';
 import GameMetaForm from '@/components/builder/GameMetaForm';
@@ -137,6 +138,12 @@ export default function BuilderPage() {
     setActive({ type: 'station', id: 0 });
   };
 
+  const handleLoadLibraryDraft = () => {
+    setDraft(libraryDraft);
+    setActive({ type: 'station', id: 0 });
+  };
+
+
   const handleNewDraft = () => {
     localStorage.removeItem('questory_builder_draft');
     setDraft({ ...defaultDraft, stations: [emptyStation(0)] });
@@ -245,6 +252,12 @@ export default function BuilderPage() {
             className="text-[#e9c349] text-sm px-4 py-2 rounded-lg border border-[#e9c349]/30 hover:border-[#e9c349]/60 transition-colors font-semibold"
           >
             🏛️ טען זכרון יעקב לעריכה
+          </button>
+          <button
+            onClick={handleLoadLibraryDraft}
+            className="text-[#00FBFB] text-sm px-4 py-2 rounded-lg border border-[#00FBFB]/30 hover:border-[#00FBFB]/60 transition-colors font-semibold"
+          >
+            📚 טען ספרייה
           </button>
           <button
             onClick={handleNewDraft}

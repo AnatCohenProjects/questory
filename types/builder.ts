@@ -1,6 +1,35 @@
 import { ChallengeData } from './challenge';
 import { Game } from './game';
 
+// ─── Game Type & Theme ────────────────────────────────────────────────────────
+
+export type GameType = 'urban' | 'library';
+
+export interface GameTheme {
+  stationLabel: string;    // "תחנה" | "ספר"
+  stationsLabel: string;   // "תחנות" | "ספרים"
+  locationLabel: string;   // "מיקום" | "מדף"
+  challengeLabel: string;  // "אתגר" | "חידת ספר"
+  nextLabel: string;       // "התחנה הבאה" | "הספר הבא"
+  routeLabel: string;      // "מסלול" | "מסע"
+}
+
+// ─── Transition Riddle ────────────────────────────────────────────────────────
+
+export interface TransitionRiddleTargetBook {
+  title: string;
+  author?: string;
+  location?: string;
+}
+
+export interface TransitionRiddle {
+  enabled: boolean;
+  prompt: string;
+  answer?: string;
+  media?: { type: 'image' | 'video' | 'audio'; url: string; caption?: string };
+  targetBook?: TransitionRiddleTargetBook;
+}
+
 // ─── Media ───────────────────────────────────────────────────────────────────
 
 export type MediaItemType = 'image' | 'video' | 'audio' | 'text';
@@ -47,6 +76,8 @@ export interface StationDraft {
   triggerType: 'qr' | 'code' | 'gps';
   triggerValue: string;
   navigationHint: string;
+  navigationAnswer?: string;
+  book?: { title: string; author?: string; location?: string };
   narrative: string;
   narrativeMedia?: { type: 'image' | 'video' | 'audio'; url: string; caption?: string };
   task: string;
@@ -55,6 +86,7 @@ export interface StationDraft {
   answer: string;
   challenge?: ChallengeData;
   media: MediaItem[];
+  transitionRiddle?: TransitionRiddle;
 }
 
 export interface GameDraft {
@@ -70,6 +102,8 @@ export interface GameDraft {
   character: { name: string; tone: string };
   stations: StationDraft[];
   dataSource?: DataSource;     // Content generation data source (game-level)
+  gameType?: GameType;
+  theme?: Partial<GameTheme>;
   // Auto-config from experience style
   aiEnabled?: boolean;
   hintsLevel?: 'low' | 'medium' | 'high';
@@ -176,11 +210,15 @@ export function draftToGame(draft: GameDraft): Game {
     duration: draft.duration,
     difficulty: draft.difficulty,
     character: { name: draft.character.name || 'מדריך', tone: draft.character.tone },
+    gameType: draft.gameType,
+    theme: draft.theme,
     stations: draft.stations.map(s => ({
       id: s.id,
       triggerType: s.triggerType,
       triggerValue: s.triggerValue,
       navigationHint: s.navigationHint,
+      navigationAnswer: s.navigationAnswer,
+      book: s.book,
       narrative: s.narrative,
       narrativeMedia: s.narrativeMedia,
       task: s.task,
@@ -188,6 +226,13 @@ export function draftToGame(draft: GameDraft): Game {
       hints: s.hints,
       answer: s.answer,
       challenge: s.challenge,
+      transitionRiddle: s.transitionRiddle ? {
+        enabled: s.transitionRiddle.enabled,
+        prompt: s.transitionRiddle.prompt,
+        answer: s.transitionRiddle.answer,
+        media: s.transitionRiddle.media,
+        targetBook: s.transitionRiddle.targetBook,
+      } : undefined,
     })),
   };
 }

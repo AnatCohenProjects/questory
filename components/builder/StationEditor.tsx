@@ -344,6 +344,67 @@ export default function StationEditor({ station, stationNumber, totalStations, g
         </div>
       </div>
 
+      {/* Transition Riddle */}
+      <div className={card}>
+        <div className="flex items-center justify-between">
+          <p className="text-[10px] uppercase tracking-[0.2em] text-[#00FBFB]/60">רמז מעבר לשלב הבא</p>
+          <button
+            onClick={() => onUpdate({
+              transitionRiddle: {
+                enabled: !station.transitionRiddle?.enabled,
+                prompt: station.transitionRiddle?.prompt ?? '',
+                answer: station.transitionRiddle?.answer,
+              },
+            })}
+            className={`text-xs px-3 py-1 rounded-lg border transition-colors ${
+              station.transitionRiddle?.enabled
+                ? 'border-[#00FBFB]/40 text-[#00FBFB] bg-[#1a2a2a]'
+                : 'border-white/10 text-[#e5e2e1]/30'
+            }`}
+          >
+            {station.transitionRiddle?.enabled ? 'מופעל' : 'כבוי'}
+          </button>
+        </div>
+        <p className="text-[10px] text-[#e5e2e1]/25">רמז שמוצג לשחקנים אחרי שהשלב הזה הושלם — לפני שעוברים לשלב הבא</p>
+
+        {station.transitionRiddle?.enabled && (
+          <div className="space-y-4 pt-2">
+            <div>
+              <label className={lbl}>טקסט הרמז</label>
+              <textarea
+                className={inp + ' resize-none min-h-[80px]'}
+                placeholder="הרמז הבא מוסתר ליד..."
+                value={station.transitionRiddle?.prompt ?? ''}
+                onChange={e => onUpdate({ transitionRiddle: { ...station.transitionRiddle!, prompt: e.target.value } })}
+              />
+            </div>
+            <div>
+              <label className={lbl}>תשובה נכונה (אופציונלי)</label>
+              <input
+                className={inp}
+                placeholder="שם הספר / מיקום הבא..."
+                value={station.transitionRiddle?.answer ?? ''}
+                onChange={e => onUpdate({ transitionRiddle: { ...station.transitionRiddle!, answer: e.target.value || undefined } })}
+              />
+              <p className="text-[10px] text-[#e5e2e1]/25 mt-1">אפשר להפריד מספר תשובות עם | (כגון: ארנב|rabbit)</p>
+            </div>
+            <div>
+              <label className={lbl}>תמונה — אופציונלי</label>
+              <ImageUpload
+                currentUrl={station.transitionRiddle?.media?.url}
+                onImageChange={(url) => onUpdate({
+                  transitionRiddle: {
+                    ...station.transitionRiddle!,
+                    media: url ? { type: 'image', url, caption: '' } : undefined,
+                  },
+                })}
+                label="תמונת רמז מעבר"
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
       {showChallengeModal && (
         <ChallengeModal
           initial={station.challenge}

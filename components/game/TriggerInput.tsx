@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { GameType } from '@/types/game';
 
 interface TriggerInputProps {
   triggerType: 'code' | 'qr' | 'gps';
@@ -9,6 +10,7 @@ interface TriggerInputProps {
   onBack?: () => void;
   stationNumber: number;
   navigationHint?: string;
+  gameType?: GameType;
 }
 
 export default function TriggerInput({
@@ -18,7 +20,9 @@ export default function TriggerInput({
   onBack,
   stationNumber,
   navigationHint,
+  gameType,
 }: TriggerInputProps) {
+  const stationLabel = gameType === 'library' ? 'ספר' : 'תחנה';
   const digitCount = expectedCode.length;
   const [digits, setDigits] = useState<string[]>(Array(digitCount).fill(''));
   const [error, setError] = useState('');
@@ -75,7 +79,7 @@ export default function TriggerInput({
               type="button"
               onClick={onBack}
               aria-label="Back"
-              className="w-8 h-8 rounded-full border border-[#3a4a49]/50 text-[#e5e2e1]/60 active:scale-95 transition-transform"
+              className="w-8 h-8 rounded-full border border-[#3a4a49]/50 text-[#e5e2e1]/60 active:scale-95 transition-transform flex items-center justify-center"
             >
               →
             </button>
@@ -86,7 +90,7 @@ export default function TriggerInput({
           <span className="font-headline tracking-[0.2em] text-base font-bold text-[#00FBFB]">QUESTORY</span>
         </div>
         <span className="text-[10px] uppercase tracking-widest text-[#e5e2e1]/30">
-          תחנה {stationNumber}
+          {stationLabel} {stationNumber}
         </span>
       </header>
 

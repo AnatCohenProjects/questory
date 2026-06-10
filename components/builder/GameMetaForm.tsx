@@ -3,10 +3,11 @@
 import { useState } from 'react';
 import {
   GameDraft, MediaItem, MediaItemType, DataSource,
-  EXPERIENCE_STYLE_LABELS, ExperienceStyle,
+  EXPERIENCE_STYLE_LABELS, ExperienceStyle, GameType,
   AUDIENCE_OPTIONS, DURATION_OPTIONS, DIFFICULTY_OPTIONS, PROGRESSION_OPTIONS,
   getAutoConfigForStyle,
 } from '@/types/builder';
+import { GAME_TYPE_PRESETS } from '@/lib/gameTypePresets';
 import ImageUpload from './ImageUpload';
 import DataSourceSelector from './DataSourceSelector';
 import AutoConfigEditor from './AutoConfigEditor';
@@ -34,6 +35,31 @@ export default function GameMetaForm({ draft, onUpdate }: GameMetaFormProps) {
       <div>
         <p className="text-[10px] uppercase tracking-[0.3em] text-[#00FBFB]/60 mb-1">הגדרות</p>
         <h2 className="font-headline text-2xl font-bold text-white">המשחק שלך</h2>
+      </div>
+
+      {/* ── Game Type ─────────────────────────────────────────────────────── */}
+      <div className="bg-[#131313] border border-[#3a4a49]/30 rounded-2xl p-6 space-y-4">
+        <div>
+          <p className="text-[10px] uppercase tracking-[0.2em] text-[#00FBFB]/60 mb-0.5">סוג הפעילות</p>
+          <p className="text-xs text-[#e5e2e1]/30">קובע ברירות מחדל של שפה ועיצוב</p>
+        </div>
+        <div className="grid grid-cols-2 gap-3">
+          {(Object.entries(GAME_TYPE_PRESETS) as [GameType, typeof GAME_TYPE_PRESETS[GameType]][]).map(([val, preset]) => (
+            <button
+              key={val}
+              onClick={e => { e.stopPropagation(); onUpdate({ gameType: val, ...preset.draftDefaults }); }}
+              className={`flex flex-col gap-1.5 p-4 rounded-xl border text-right transition-all ${
+                (draft.gameType ?? 'urban') === val
+                  ? 'border-[#00FBFB]/50 bg-[#1a2a2a] text-[#00FBFB]'
+                  : 'border-[#3a4a49]/40 text-[#e5e2e1]/50 hover:border-[#3a4a49]/80 hover:text-[#e5e2e1]/80'
+              }`}
+            >
+              <span className="text-2xl">{preset.icon}</span>
+              <span className="text-sm font-semibold leading-tight">{preset.label}</span>
+              <span className="text-[10px] opacity-60 leading-tight">{preset.description}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* ── Step 1: Experience Style (primary selector) ───────────────────── */}
