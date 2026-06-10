@@ -63,6 +63,7 @@ export default function MapNextStep({
   const [riddleSolved, setRiddleSolved] = useState(false);
 
   const labels = getLabels(gameType);
+  const isLibraryReveal = gameType === 'library' && riddleSolved;
   const isFirst = stationNumber === 1;
   const nextStation = stationNumber < totalStations ? stationNumber + 1 : null;
   const prevStation = stationNumber > 1 ? stationNumber - 1 : null;
@@ -129,15 +130,24 @@ export default function MapNextStep({
       <main className="flex-1 flex flex-col w-full max-w-md lg:max-w-6xl px-6 lg:px-8 pt-8 lg:pt-10 pb-8 lg:pb-12 gap-6 lg:gap-8">
 
         <div className="space-y-2 anim-fade-up lg:max-w-xl">
-          <p className="text-[10px] uppercase tracking-[0.35em] text-[#00FBFB]/70">הצעד הבא</p>
-          <h1 className="font-headline text-4xl lg:text-5xl font-bold text-white leading-tight">לאן ממשיכים?</h1>
+          {!isLibraryReveal && (
+            <p className="text-[10px] uppercase tracking-[0.35em] text-[#00FBFB]/70">הצעד הבא</p>
+          )}
+          <h1 className="font-headline text-4xl lg:text-5xl font-bold text-white leading-tight">
+            {isLibraryReveal ? 'הספר הבא נחשף!' : 'לאן ממשיכים?'}
+          </h1>
+          {isLibraryReveal && (
+            <p className="text-[#e5e2e1]/55 text-sm leading-relaxed">
+              פתרתם את חידת המעבר. עכשיו מצאו את הספר בספרייה.
+            </p>
+          )}
         </div>
 
         <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(360px,1fr)_minmax(340px,0.82fr)] lg:items-start lg:gap-8">
 
           {/* Progress path */}
           <section
-            className="relative overflow-hidden rounded-2xl border border-[#3a4a49]/40 bg-[#101616] px-5 lg:px-7 py-5 lg:py-7 anim-fade-up lg:min-h-[460px]"
+            className={`relative overflow-hidden rounded-2xl border border-[#3a4a49]/40 bg-[#101616] px-5 lg:px-7 py-5 lg:py-7 anim-fade-up lg:min-h-[460px] ${isLibraryReveal ? 'hidden lg:block' : ''}`}
             style={{ animationDelay: '100ms' }}
           >
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(0,251,251,0.16),transparent_45%)]" />
@@ -277,22 +287,27 @@ export default function MapNextStep({
               <>
                 {/* Book reveal */}
                 <div
-                  className="bg-[#131313] border border-[#e9c349]/25 rounded-2xl p-5 space-y-3 anim-fade-up"
+                  className="relative overflow-hidden bg-[#131313] border border-[#e9c349]/35 rounded-2xl p-5 space-y-3 anim-book-reveal shadow-[0_0_34px_rgba(233,195,73,0.08),0_0_26px_rgba(0,251,251,0.04)]"
                   style={{ animationDelay: '0ms' }}
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-[#e9c349] text-sm">✓</span>
                     <p className="text-[10px] uppercase tracking-[0.25em] text-[#e9c349]/80">
-                      {gameType === 'library' ? 'הספר הבא שלכם' : 'היעד הבא שלכם'}
+                      {gameType === 'library' ? 'גילוי חדש' : 'היעד הבא שלכם'}
                     </p>
                   </div>
-                  <div className="text-center py-2">
-                    <div className="text-4xl mb-2">📖</div>
-                    <h2 className="font-headline font-bold text-xl text-white">
+                  <div className="relative text-center py-2">
+                    <div className="mx-auto mb-3 flex h-14 w-14 lg:h-16 lg:w-16 items-center justify-center rounded-2xl border border-[#e9c349]/30 bg-[#1a1810] text-[#e9c349] shadow-[0_0_24px_rgba(233,195,73,0.18),0_0_18px_rgba(0,251,251,0.08)]">
+                      <svg viewBox="0 0 24 24" aria-hidden="true" className="h-8 w-8 lg:h-9 lg:w-9" fill="none">
+                        <path d="M5 5.5c0-.9.7-1.6 1.6-1.6H11c.8 0 1.5.3 2 .9.5-.6 1.2-.9 2-.9h4.4c.9 0 1.6.7 1.6 1.6v13.1c0 .6-.6 1-1.1.7-.9-.4-2-.6-3.1-.6-1.6 0-2.9.4-3.8 1.2-.9-.8-2.2-1.2-3.8-1.2-1.1 0-2.2.2-3.1.6-.5.3-1.1-.1-1.1-.7V5.5Z" stroke="currentColor" strokeWidth="1.6" />
+                        <path d="M13 4.8v15M8 8h2.2M8 11h2.2M16 8h2.2M16 11h2.2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                      </svg>
+                    </div>
+                    <h2 className="font-headline font-bold text-2xl text-white text-glow-cyan">
                       {transitionRiddle.targetBook?.title ?? displayHint}
                     </h2>
                     {transitionRiddle.targetBook?.author && (
-                      <p className="text-[#e5e2e1]/50 text-sm mt-1">{transitionRiddle.targetBook.author}</p>
+                      <p className="text-[#e9c349]/80 text-sm font-semibold mt-2">{transitionRiddle.targetBook.author}</p>
                     )}
                     {transitionRiddle.targetBook?.location && (
                       <div className="mt-3 pt-3 border-t border-white/5">
@@ -304,15 +319,22 @@ export default function MapNextStep({
                 </div>
 
                 <p className="text-[#e5e2e1]/40 text-sm text-center">
-                  {gameType === 'library' ? 'גשו למצוא את הספר על המדף, ולחצו כשאתם ליד הספר.' : 'גשו אל היעד ולחצו כשהגעתם.'}
+                  {gameType === 'library' ? 'גשו למדף, מצאו את הספר, ולחצו כשאתם לידו.' : 'גשו אל היעד ולחצו כשהגעתם.'}
                 </p>
 
                 <button
                   onClick={onReady}
                   className="anim-pulse-cta w-full relative overflow-hidden bg-[#1a1810] border border-[#e9c349]/30 text-[#e9c349] font-headline font-bold text-base tracking-[0.3em] uppercase py-5 rounded-xl active:scale-[0.98] transition-all"
                 >
-                  {labels.arrivedCta}
+                  {gameType === 'library' ? 'מצאתי את הספר' : labels.arrivedCta}
                 </button>
+                {gameType === 'library' && (
+                  <div className="lg:hidden rounded-xl border border-[#00FBFB]/15 bg-[#101616] px-4 py-3 text-center">
+                    <p className="text-[10px] uppercase tracking-[0.25em] text-[#00FBFB]/70">
+                      ספר {formatNum(stationNumber)} מתוך {formatNum(totalStations)}
+                    </p>
+                  </div>
+                )}
               </>
             )}
 
@@ -353,20 +375,25 @@ export default function MapNextStep({
             {!transitionRiddle && gameType === 'library' && riddleSolved && (
               <>
                 <div
-                  className="bg-[#131313] border border-[#e9c349]/25 rounded-2xl p-5 space-y-3 anim-fade-up"
+                  className="relative overflow-hidden bg-[#131313] border border-[#e9c349]/35 rounded-2xl p-5 space-y-3 anim-book-reveal shadow-[0_0_34px_rgba(233,195,73,0.08),0_0_26px_rgba(0,251,251,0.04)]"
                   style={{ animationDelay: '0ms' }}
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-[#e9c349] text-sm">✓</span>
-                    <p className="text-[10px] uppercase tracking-[0.25em] text-[#e9c349]/80">הספר שלכם</p>
+                    <p className="text-[10px] uppercase tracking-[0.25em] text-[#e9c349]/80">גילוי חדש</p>
                   </div>
-                  <div className="text-center py-2">
-                    <div className="text-4xl mb-2">📖</div>
-                    <h2 className="font-headline font-bold text-xl text-white">
+                  <div className="relative text-center py-2">
+                    <div className="mx-auto mb-3 flex h-14 w-14 lg:h-16 lg:w-16 items-center justify-center rounded-2xl border border-[#e9c349]/30 bg-[#1a1810] text-[#e9c349] shadow-[0_0_24px_rgba(233,195,73,0.18),0_0_18px_rgba(0,251,251,0.08)]">
+                      <svg viewBox="0 0 24 24" aria-hidden="true" className="h-8 w-8 lg:h-9 lg:w-9" fill="none">
+                        <path d="M5 5.5c0-.9.7-1.6 1.6-1.6H11c.8 0 1.5.3 2 .9.5-.6 1.2-.9 2-.9h4.4c.9 0 1.6.7 1.6 1.6v13.1c0 .6-.6 1-1.1.7-.9-.4-2-.6-3.1-.6-1.6 0-2.9.4-3.8 1.2-.9-.8-2.2-1.2-3.8-1.2-1.1 0-2.2.2-3.1.6-.5.3-1.1-.1-1.1-.7V5.5Z" stroke="currentColor" strokeWidth="1.6" />
+                        <path d="M13 4.8v15M8 8h2.2M8 11h2.2M16 8h2.2M16 11h2.2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                      </svg>
+                    </div>
+                    <h2 className="font-headline font-bold text-2xl text-white text-glow-cyan">
                       {currentBook?.title ?? riddleInput.trim()}
                     </h2>
                     {currentBook?.author && (
-                      <p className="text-[#e5e2e1]/50 text-sm mt-1">{currentBook.author}</p>
+                      <p className="text-[#e9c349]/80 text-sm font-semibold mt-2">{currentBook.author}</p>
                     )}
                     {currentBook?.location && (
                       <div className="mt-3 pt-3 border-t border-white/5">
@@ -376,13 +403,20 @@ export default function MapNextStep({
                     )}
                   </div>
                 </div>
-                <p className="text-[#e5e2e1]/40 text-sm text-center">גשו למצוא את הספר על המדף, ולחצו כשאתם ליד הספר.</p>
+                <p className="text-[#e5e2e1]/40 text-sm text-center">
+                  גשו למדף, מצאו את הספר, ולחצו כשאתם לידו.
+                </p>
                 <button
                   onClick={onReady}
                   className="anim-pulse-cta w-full relative overflow-hidden bg-[#1a1810] border border-[#e9c349]/30 text-[#e9c349] font-headline font-bold text-base tracking-[0.3em] uppercase py-5 rounded-xl active:scale-[0.98] transition-all"
                 >
-                  הגעתי ליעד
+                  מצאתי את הספר
                 </button>
+                <div className="lg:hidden rounded-xl border border-[#00FBFB]/15 bg-[#101616] px-4 py-3 text-center">
+                  <p className="text-[10px] uppercase tracking-[0.25em] text-[#00FBFB]/70">
+                    ספר {formatNum(stationNumber)} מתוך {formatNum(totalStations)}
+                  </p>
+                </div>
               </>
             )}
 
