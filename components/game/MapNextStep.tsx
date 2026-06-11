@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { GameType } from '@/types/game';
 
+const HOLOGRAPHIC_BOOK_SRC = '/images/library/holographic-book-reveal.png';
+
 interface TransitionRiddleData {
   prompt: string;
   answer?: string;
@@ -61,8 +63,10 @@ export default function MapNextStep({
   const [riddleInput, setRiddleInput] = useState('');
   const [riddleError, setRiddleError] = useState('');
   const [riddleSolved, setRiddleSolved] = useState(false);
+  const [bookRevealImageFailed, setBookRevealImageFailed] = useState(false);
 
   const labels = getLabels(gameType);
+  const isLibraryReveal = gameType === 'library' && riddleSolved;
   const isFirst = stationNumber === 1;
   const nextStation = stationNumber < totalStations ? stationNumber + 1 : null;
   const prevStation = stationNumber > 1 ? stationNumber - 1 : null;
@@ -126,22 +130,45 @@ export default function MapNextStep({
         <span className="text-[10px] uppercase tracking-widest text-[#e5e2e1]/30">{labels.stationLabel} {stationNumber}</span>
       </header>
 
-      <main className="flex-1 flex flex-col w-full max-w-md lg:max-w-6xl px-6 lg:px-8 pt-8 lg:pt-10 pb-8 lg:pb-12 gap-6 lg:gap-8">
+      <main className={`flex-1 flex flex-col w-full max-w-md lg:max-w-6xl px-6 lg:px-8 ${isLibraryReveal ? 'pt-2 lg:pt-4 pb-4 lg:pb-8 gap-2 lg:gap-4' : 'pt-8 lg:pt-10 pb-8 lg:pb-12 gap-6 lg:gap-8'}`}>
 
-        <div className="space-y-2 anim-fade-up lg:max-w-xl">
-          <p className="text-[10px] uppercase tracking-[0.35em] text-[#00FBFB]/70">הצעד הבא</p>
-          <h1 className="font-headline text-4xl lg:text-5xl font-bold text-white leading-tight">לאן ממשיכים?</h1>
+        <div className={`anim-fade-up ${isLibraryReveal ? 'space-y-1 lg:max-w-lg' : 'space-y-2 lg:max-w-xl'}`}>
+          {!isLibraryReveal && (
+            <p className="text-[10px] uppercase tracking-[0.35em] text-[#00FBFB]/70">הצעד הבא</p>
+          )}
+          <h1 className={`font-headline font-bold text-white leading-tight ${isLibraryReveal ? 'text-[28px] lg:text-4xl' : 'text-4xl lg:text-5xl'}`}>
+            {isLibraryReveal ? 'הספר הבא נחשף!' : 'לאן ממשיכים?'}
+          </h1>
+          {isLibraryReveal && (
+            <p className="text-[#e5e2e1]/70 text-base lg:text-sm leading-snug">
+              פתרתם את חידת המעבר. עכשיו מצאו את הספר בספרייה.
+            </p>
+          )}
         </div>
 
-        <div className="flex flex-col gap-6 lg:grid lg:grid-cols-[minmax(360px,1fr)_minmax(340px,0.82fr)] lg:items-start lg:gap-8">
+        <div className={`flex flex-col lg:grid lg:grid-cols-[minmax(360px,1fr)_minmax(340px,0.82fr)] lg:items-start ${isLibraryReveal ? 'gap-2 lg:gap-5' : 'gap-6 lg:gap-8'}`}>
 
           {/* Progress path */}
           <section
-            className="relative overflow-hidden rounded-2xl border border-[#3a4a49]/40 bg-[#101616] px-5 lg:px-7 py-5 lg:py-7 anim-fade-up lg:min-h-[460px]"
+            className={`relative overflow-hidden rounded-2xl border border-[#3a4a49]/40 bg-[#101616] px-5 lg:px-7 py-5 lg:py-7 anim-fade-up lg:min-h-[460px] ${isLibraryReveal ? 'hidden lg:block' : ''}`}
             style={{ animationDelay: '100ms' }}
           >
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_35%,rgba(0,251,251,0.16),transparent_45%)]" />
-            <div className="relative">
+            {isLibraryReveal && !bookRevealImageFailed && (
+              <div className="pointer-events-none absolute left-7 top-1/2 z-0 hidden -translate-y-1/2 flex-col items-center gap-3 lg:flex xl:left-10">
+                <p className="font-headline text-[10px] uppercase tracking-[0.3em] text-[#D4AF37]/80">
+                  גילוי חדש
+                </p>
+                <img
+                  src={HOLOGRAPHIC_BOOK_SRC}
+                  alt=""
+                  aria-hidden="true"
+                  onError={() => setBookRevealImageFailed(true)}
+                  className="library-book-hero w-44 max-w-full rounded-lg object-contain xl:w-52"
+                />
+              </div>
+            )}
+            <div className="relative z-10">
               <p className="font-headline text-sm lg:text-base font-bold text-white mb-5 lg:mb-7">התקדמות במשחק</p>
 
               <div className="relative min-h-[220px] lg:min-h-[360px]">
@@ -223,13 +250,13 @@ export default function MapNextStep({
           </section>
 
           {/* Right panel */}
-          <div className="flex flex-col gap-6 lg:pt-6">
+          <div className={`flex flex-col ${isLibraryReveal ? 'gap-2 lg:gap-3 lg:pt-0' : 'gap-6 lg:pt-6'}`}>
 
             {transitionRiddle && !riddleSolved && (
               <>
                 {/* Riddle panel */}
                 <div
-                  className="bg-[#131313] border border-[#9745FF]/25 rounded-2xl p-5 space-y-4 anim-fade-up"
+                  className={`border rounded-2xl p-5 space-y-4 anim-fade-up ${gameType === 'library' ? 'library-panel' : 'bg-[#131313] border-[#9745FF]/25'}`}
                   style={{ animationDelay: '150ms' }}
                 >
                   <div className="flex items-center gap-2">
@@ -258,13 +285,13 @@ export default function MapNextStep({
                       placeholder="הקלידו את התשובה"
                       onChange={e => { setRiddleInput(e.target.value); setRiddleError(''); }}
                       onKeyDown={e => e.key === 'Enter' && submitRiddle()}
-                      className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-[#e5e2e1] text-base outline-none focus:border-[#9745FF]/50 transition-colors"
+                      className={`w-full border rounded-xl px-4 py-3 text-[#e5e2e1] text-base outline-none transition-all ${gameType === 'library' ? 'library-input' : 'bg-[#0a0a0a] border-white/10 focus:border-[#9745FF]/50'}`}
                     />
                     {riddleError && <p className="text-red-400/80 text-sm">{riddleError}</p>}
                     <button
                       onClick={submitRiddle}
                       disabled={!riddleInput.trim()}
-                      className="w-full bg-[#1a1428] border border-[#9745FF]/30 text-[#9745FF] font-headline font-bold tracking-[0.3em] uppercase py-4 rounded-xl active:scale-[0.98] transition-all disabled:opacity-30"
+                      className={`w-full border font-headline font-bold tracking-[0.3em] uppercase py-4 rounded-xl active:scale-[0.98] transition-all disabled:opacity-30 ${gameType === 'library' ? 'library-cta' : 'bg-[#1a1428] border-[#9745FF]/30 text-[#9745FF]'}`}
                     >
                       {gameType === 'library' ? 'גלו את הספר הבא' : 'גלו את התחנה הבאה'}
                     </button>
@@ -275,44 +302,68 @@ export default function MapNextStep({
 
             {transitionRiddle && riddleSolved && (
               <>
+                {gameType === 'library' && !bookRevealImageFailed && (
+                  <div className="flex justify-center -my-1 lg:hidden">
+                    <img
+                      src={HOLOGRAPHIC_BOOK_SRC}
+                      alt=""
+                      aria-hidden="true"
+                      onError={() => setBookRevealImageFailed(true)}
+                      className="library-book-hero w-[124px] sm:w-32 lg:w-48 max-w-full rounded-lg object-contain"
+                    />
+                  </div>
+                )}
+
                 {/* Book reveal */}
                 <div
-                  className="bg-[#131313] border border-[#e9c349]/25 rounded-2xl p-5 space-y-3 anim-fade-up"
+                  className={`relative overflow-hidden border rounded-2xl p-3 lg:p-5 space-y-2 lg:space-y-3 anim-book-reveal ${gameType === 'library' ? 'library-panel' : 'bg-[#131313] border-[#e9c349]/35 shadow-[0_0_34px_rgba(233,195,73,0.08),0_0_26px_rgba(0,251,251,0.04)]'}`}
                   style={{ animationDelay: '0ms' }}
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-[#e9c349] text-sm">✓</span>
                     <p className="text-[10px] uppercase tracking-[0.25em] text-[#e9c349]/80">
-                      {gameType === 'library' ? 'הספר הבא שלכם' : 'היעד הבא שלכם'}
+                      {gameType === 'library' ? 'גילוי חדש' : 'היעד הבא שלכם'}
                     </p>
                   </div>
-                  <div className="text-center py-2">
-                    <div className="text-4xl mb-2">📖</div>
-                    <h2 className="font-headline font-bold text-xl text-white">
+                  <div className="relative text-center py-2">
+                    <div className="mx-auto mb-2 flex h-11 w-11 lg:h-14 lg:w-14 items-center justify-center rounded-2xl border border-[#e9c349]/30 bg-[#1a1810] text-[#e9c349] shadow-[0_0_24px_rgba(233,195,73,0.18),0_0_18px_rgba(0,251,251,0.08)]">
+                      <svg viewBox="0 0 24 24" aria-hidden="true" className="h-6 w-6 lg:h-8 lg:w-8" fill="none">
+                        <path d="M5 5.5c0-.9.7-1.6 1.6-1.6H11c.8 0 1.5.3 2 .9.5-.6 1.2-.9 2-.9h4.4c.9 0 1.6.7 1.6 1.6v13.1c0 .6-.6 1-1.1.7-.9-.4-2-.6-3.1-.6-1.6 0-2.9.4-3.8 1.2-.9-.8-2.2-1.2-3.8-1.2-1.1 0-2.2.2-3.1.6-.5.3-1.1-.1-1.1-.7V5.5Z" stroke="currentColor" strokeWidth="1.6" />
+                        <path d="M13 4.8v15M8 8h2.2M8 11h2.2M16 8h2.2M16 11h2.2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                      </svg>
+                    </div>
+                    <h2 className="font-headline font-bold text-xl lg:text-2xl text-white text-glow-cyan">
                       {transitionRiddle.targetBook?.title ?? displayHint}
                     </h2>
                     {transitionRiddle.targetBook?.author && (
-                      <p className="text-[#e5e2e1]/50 text-sm mt-1">{transitionRiddle.targetBook.author}</p>
+                      <p className="text-[#e9c349]/85 text-[15px] font-semibold mt-1 lg:mt-2">{transitionRiddle.targetBook.author}</p>
                     )}
                     {transitionRiddle.targetBook?.location && (
                       <div className="mt-3 pt-3 border-t border-white/5">
                         <p className="text-[10px] uppercase tracking-widest text-[#e9c349]/60 mb-1">מיקום</p>
-                        <p className="text-[#e5e2e1]/70 text-sm">{transitionRiddle.targetBook.location}</p>
+                        <p className="text-[#e5e2e1]/75 text-[15px]">{transitionRiddle.targetBook.location}</p>
                       </div>
                     )}
                   </div>
                 </div>
 
-                <p className="text-[#e5e2e1]/40 text-sm text-center">
-                  {gameType === 'library' ? 'גשו למצוא את הספר על המדף, ולחצו כשאתם ליד הספר.' : 'גשו אל היעד ולחצו כשהגעתם.'}
+                <p className="text-[#e5e2e1]/65 text-[15px] leading-snug text-center">
+                  {gameType === 'library' ? 'גשו למדף, מצאו את הספר, ולחצו כשאתם לידו.' : 'גשו אל היעד ולחצו כשהגעתם.'}
                 </p>
 
                 <button
                   onClick={onReady}
-                  className="anim-pulse-cta w-full relative overflow-hidden bg-[#1a1810] border border-[#e9c349]/30 text-[#e9c349] font-headline font-bold text-base tracking-[0.3em] uppercase py-5 rounded-xl active:scale-[0.98] transition-all"
+                  className={`anim-pulse-cta w-full relative overflow-hidden border font-headline font-bold text-base uppercase rounded-xl active:scale-[0.98] transition-all ${gameType === 'library' ? 'library-cta py-4 lg:py-5 tracking-[0.14em] lg:tracking-[0.3em]' : 'bg-[#1a1810] border-[#e9c349]/30 text-[#e9c349] py-5 tracking-[0.3em]'}`}
                 >
-                  {labels.arrivedCta}
+                  {gameType === 'library' ? 'מצאתי את הספר' : labels.arrivedCta}
                 </button>
+                {gameType === 'library' && (
+                  <div className="lg:hidden rounded-xl border border-[#00FBFB]/15 bg-[#101616] px-4 py-3 text-center">
+                    <p className="text-[10px] uppercase tracking-[0.25em] text-[#00FBFB]/70">
+                      ספר {formatNum(stationNumber)} מתוך {formatNum(totalStations)}
+                    </p>
+                  </div>
+                )}
               </>
             )}
 
@@ -320,7 +371,7 @@ export default function MapNextStep({
               <>
                 {/* First station: navigationHint as riddle with answer input */}
                 <div
-                  className="bg-[#131313] border border-[#9745FF]/25 rounded-2xl p-5 space-y-4 anim-fade-up"
+                  className="library-panel border rounded-2xl p-5 space-y-4 anim-fade-up"
                   style={{ animationDelay: '150ms' }}
                 >
                   <div className="flex items-center gap-2">
@@ -335,13 +386,13 @@ export default function MapNextStep({
                       placeholder="הקלידו את התשובה"
                       onChange={e => { setRiddleInput(e.target.value); setRiddleError(''); }}
                       onKeyDown={e => e.key === 'Enter' && submitRiddle()}
-                      className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl px-4 py-3 text-[#e5e2e1] text-base outline-none focus:border-[#9745FF]/50 transition-colors"
+                      className="library-input w-full border rounded-xl px-4 py-3 text-[#e5e2e1] text-base outline-none transition-all"
                     />
                     {riddleError && <p className="text-red-400/80 text-sm">{riddleError}</p>}
                     <button
                       onClick={submitRiddle}
                       disabled={!riddleInput.trim()}
-                      className="w-full bg-[#1a1428] border border-[#9745FF]/30 text-[#9745FF] font-headline font-bold tracking-[0.3em] uppercase py-4 rounded-xl active:scale-[0.98] transition-all disabled:opacity-30"
+                      className="library-cta w-full border font-headline font-bold tracking-[0.3em] uppercase py-4 rounded-xl active:scale-[0.98] transition-all disabled:opacity-30"
                     >
                       גלו את הספר הבא
                     </button>
@@ -352,37 +403,61 @@ export default function MapNextStep({
 
             {!transitionRiddle && gameType === 'library' && riddleSolved && (
               <>
+                {!bookRevealImageFailed && (
+                  <div className="flex justify-center -my-1 lg:hidden">
+                    <img
+                      src={HOLOGRAPHIC_BOOK_SRC}
+                      alt=""
+                      aria-hidden="true"
+                      onError={() => setBookRevealImageFailed(true)}
+                      className="library-book-hero w-[124px] sm:w-32 lg:w-48 max-w-full rounded-lg object-contain"
+                    />
+                  </div>
+                )}
+
                 <div
-                  className="bg-[#131313] border border-[#e9c349]/25 rounded-2xl p-5 space-y-3 anim-fade-up"
+                  className={`relative overflow-hidden border rounded-2xl p-3 lg:p-5 space-y-2 lg:space-y-3 anim-book-reveal ${gameType === 'library' ? 'library-panel' : 'bg-[#131313] border-[#e9c349]/35 shadow-[0_0_34px_rgba(233,195,73,0.08),0_0_26px_rgba(0,251,251,0.04)]'}`}
                   style={{ animationDelay: '0ms' }}
                 >
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-[#e9c349] text-sm">✓</span>
-                    <p className="text-[10px] uppercase tracking-[0.25em] text-[#e9c349]/80">הספר שלכם</p>
+                    <p className="text-[10px] uppercase tracking-[0.25em] text-[#e9c349]/80">גילוי חדש</p>
                   </div>
-                  <div className="text-center py-2">
-                    <div className="text-4xl mb-2">📖</div>
-                    <h2 className="font-headline font-bold text-xl text-white">
+                  <div className="relative text-center py-2">
+                    <div className="mx-auto mb-2 flex h-11 w-11 lg:h-14 lg:w-14 items-center justify-center rounded-2xl border border-[#e9c349]/30 bg-[#1a1810] text-[#e9c349] shadow-[0_0_24px_rgba(233,195,73,0.18),0_0_18px_rgba(0,251,251,0.08)]">
+                      <svg viewBox="0 0 24 24" aria-hidden="true" className="h-6 w-6 lg:h-8 lg:w-8" fill="none">
+                        <path d="M5 5.5c0-.9.7-1.6 1.6-1.6H11c.8 0 1.5.3 2 .9.5-.6 1.2-.9 2-.9h4.4c.9 0 1.6.7 1.6 1.6v13.1c0 .6-.6 1-1.1.7-.9-.4-2-.6-3.1-.6-1.6 0-2.9.4-3.8 1.2-.9-.8-2.2-1.2-3.8-1.2-1.1 0-2.2.2-3.1.6-.5.3-1.1-.1-1.1-.7V5.5Z" stroke="currentColor" strokeWidth="1.6" />
+                        <path d="M13 4.8v15M8 8h2.2M8 11h2.2M16 8h2.2M16 11h2.2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                      </svg>
+                    </div>
+                    <h2 className="font-headline font-bold text-xl lg:text-2xl text-white text-glow-cyan">
                       {currentBook?.title ?? riddleInput.trim()}
                     </h2>
                     {currentBook?.author && (
-                      <p className="text-[#e5e2e1]/50 text-sm mt-1">{currentBook.author}</p>
+                      <p className="text-[#e9c349]/85 text-[15px] font-semibold mt-1 lg:mt-2">{currentBook.author}</p>
                     )}
                     {currentBook?.location && (
                       <div className="mt-3 pt-3 border-t border-white/5">
                         <p className="text-[10px] uppercase tracking-widest text-[#e9c349]/60 mb-1">מיקום</p>
-                        <p className="text-[#e5e2e1]/70 text-sm">{currentBook.location}</p>
+                        <p className="text-[#e5e2e1]/75 text-[15px]">{currentBook.location}</p>
                       </div>
                     )}
                   </div>
                 </div>
-                <p className="text-[#e5e2e1]/40 text-sm text-center">גשו למצוא את הספר על המדף, ולחצו כשאתם ליד הספר.</p>
+                <p className="text-[#e5e2e1]/65 text-[15px] leading-snug text-center">
+                  גשו למדף, מצאו את הספר, ולחצו כשאתם לידו.
+                </p>
                 <button
                   onClick={onReady}
-                  className="anim-pulse-cta w-full relative overflow-hidden bg-[#1a1810] border border-[#e9c349]/30 text-[#e9c349] font-headline font-bold text-base tracking-[0.3em] uppercase py-5 rounded-xl active:scale-[0.98] transition-all"
+                  className={`anim-pulse-cta w-full relative overflow-hidden border font-headline font-bold text-base uppercase py-4 lg:py-5 rounded-xl active:scale-[0.98] transition-all ${gameType === 'library' ? 'library-cta tracking-[0.14em] lg:tracking-[0.3em]' : 'bg-[#1a1810] border-[#e9c349]/30 text-[#e9c349] tracking-[0.3em]'}`}
                 >
-                  הגעתי ליעד
+                  מצאתי את הספר
                 </button>
+                <div className="lg:hidden rounded-xl border border-[#00FBFB]/15 bg-[#101616] px-4 py-3 text-center">
+                  <p className="text-[10px] uppercase tracking-[0.25em] text-[#00FBFB]/70">
+                    ספר {formatNum(stationNumber)} מתוך {formatNum(totalStations)}
+                  </p>
+                </div>
               </>
             )}
 

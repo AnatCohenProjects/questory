@@ -74,6 +74,7 @@ export default function StationView({ station, game, session, onComplete, onBack
   const [showReveal, setShowReveal] = useState(false);
   const answerInputRef = useRef<HTMLInputElement>(null);
   const isEmptyAnswerError = error === EMPTY_ANSWER_MESSAGE;
+  const isLibrary = game.gameType === 'library';
 
   const handleSubmitAnswer = async () => {
     const trimmedAnswer = answer.trim();
@@ -174,7 +175,7 @@ export default function StationView({ station, game, session, onComplete, onBack
         {station.challenge && (
           <div className="space-y-5 lg:col-start-2 lg:row-start-1">
             <p className="text-[10px] uppercase tracking-[0.35em] text-[#00FBFB]/70">האתגר</p>
-            <div className="bg-[#131313] border border-[#3a4a49]/50 rounded-2xl overflow-hidden">
+            <div className={`rounded-2xl overflow-hidden ${isLibrary ? 'library-panel border' : 'bg-[#131313] border border-[#3a4a49]/50'}`}>
               <div className="p-5">
                 <ChallengeView
                   challenge={station.challenge}
@@ -187,7 +188,7 @@ export default function StationView({ station, game, session, onComplete, onBack
 
         <div className="space-y-4 lg:col-start-2 lg:row-start-2">
           {/* Answer action */}
-          <div className="bg-[#101616] border border-[#00FBFB]/15 rounded-2xl p-5 space-y-4">
+          <div className={`rounded-2xl p-5 space-y-4 ${isLibrary ? 'library-panel border' : 'bg-[#101616] border border-[#00FBFB]/15'}`}>
           <div className="space-y-2">
             <p className="font-headline text-base font-bold text-white">הפתרון שלכם</p>
             <p className="text-[10px] uppercase tracking-[0.35em] text-[#00FBFB]/70">כתבו את הפתרון שמצאתם</p>
@@ -205,10 +206,12 @@ export default function StationView({ station, game, session, onComplete, onBack
               onKeyDown={(e) => e.key === 'Enter' && handleSubmitAnswer()}
               placeholder="הקלידו כאן את התשובה"
               aria-invalid={isEmptyAnswerError || undefined}
-              className={`w-full bg-[#131313] text-[#e5e2e1] text-lg font-medium text-right py-5 px-5 rounded-xl border outline-none placeholder:text-[#e5e2e1]/25 tracking-normal transition-all ${
+              className={`w-full ${isLibrary ? 'library-input' : 'bg-[#131313]'} text-[#e5e2e1] text-lg font-medium text-right py-5 px-5 rounded-xl border outline-none placeholder:text-[#e5e2e1]/25 tracking-normal transition-all ${
                 isEmptyAnswerError
                   ? 'border-red-400/70 shadow-[0_0_18px_rgba(248,113,113,0.18)] focus:border-red-300'
-                  : 'border-[#3a4a49] focus:border-[#00FBFB]'
+                  : isLibrary
+                    ? 'focus:border-[#D4AF37]/70'
+                    : 'bg-[#131313] border-[#3a4a49] focus:border-[#00FBFB]'
               }`}
             />
           )}
@@ -218,7 +221,7 @@ export default function StationView({ station, game, session, onComplete, onBack
           <button
             onClick={handleSubmitAnswer}
             disabled={submitting}
-            className="anim-pulse-cta w-full relative overflow-hidden bg-[#1a2a2a] border border-[#00FBFB]/30 text-[#00FBFB] font-headline font-bold text-base tracking-[0.4em] uppercase py-5 rounded-xl active:scale-[0.98] transition-all disabled:opacity-25 flex items-center justify-center"
+            className={`anim-pulse-cta w-full relative overflow-hidden border font-headline font-bold text-base tracking-[0.4em] uppercase py-5 rounded-xl active:scale-[0.98] transition-all disabled:opacity-25 flex items-center justify-center ${isLibrary ? 'library-cta' : 'bg-[#1a2a2a] border-[#00FBFB]/30 text-[#00FBFB]'}`}
             style={answer.trim() ? { boxShadow: '0 0 20px rgba(0,251,251,0.08)' } : undefined}
           >
             {answer.trim() && !submitting && (
@@ -233,11 +236,11 @@ export default function StationView({ station, game, session, onComplete, onBack
           </button>
         </div>
 
-          <div className="bg-[#0E0E0E]/85 backdrop-blur-xl border border-[#00FBFB]/10 rounded-2xl p-5 space-y-3">
+          <div className={`backdrop-blur-xl rounded-2xl p-5 space-y-3 ${isLibrary ? 'library-panel-soft border' : 'bg-[#0E0E0E]/85 border border-[#00FBFB]/10'}`}>
           <button
             onClick={() => setShowChat(true)}
             disabled={hintsUsed >= 3}
-            className="w-full flex items-center justify-center gap-2 bg-[#131313] border border-[#00FBFB]/25 rounded-xl py-4 active:scale-[0.98] transition-all disabled:opacity-30"
+            className={`w-full flex items-center justify-center gap-2 rounded-xl py-4 active:scale-[0.98] transition-all disabled:opacity-30 ${isLibrary ? 'library-panel-soft border' : 'bg-[#131313] border border-[#00FBFB]/25'}`}
             style={hintsUsed < 3 ? { boxShadow: '0 0 15px rgba(0,251,251,0.06)' } : undefined}
           >
             <span className="text-lg">💬</span>

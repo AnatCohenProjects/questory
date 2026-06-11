@@ -39,7 +39,7 @@ export default function TransitionRiddleView({ prompt, answer, media, gameType, 
   return (
     <div className="min-h-screen bg-[#0E0E0E] text-[#e5e2e1] flex flex-col items-center justify-center px-6" dir="rtl">
 
-      <div className="fixed top-1/3 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#9745FF]/5 rounded-full blur-[140px] pointer-events-none" />
+      <div className={`fixed top-1/3 left-1/2 -translate-x-1/2 w-96 h-96 rounded-full blur-[140px] pointer-events-none ${isLibrary ? 'bg-[#D4AF37]/6' : 'bg-[#9745FF]/5'}`} />
 
       {onBack && (
         <button
@@ -71,8 +71,8 @@ export default function TransitionRiddleView({ prompt, answer, media, gameType, 
         )}
 
         <div
-          className="bg-[#131313] border border-[#9745FF]/25 rounded-2xl p-6"
-          style={{ boxShadow: '0 0 30px rgba(151,69,255,0.06)' }}
+          className={`border rounded-2xl p-6 ${isLibrary ? 'library-panel' : 'bg-[#131313] border-[#9745FF]/25'}`}
+          style={isLibrary ? undefined : { boxShadow: '0 0 30px rgba(151,69,255,0.06)' }}
         >
           <p className="text-[#e5e2e1]/85 text-base leading-relaxed">{prompt}</p>
         </div>
@@ -85,13 +85,13 @@ export default function TransitionRiddleView({ prompt, answer, media, gameType, 
               placeholder="הקלידו את התשובה"
               onChange={e => { setInput(e.target.value); setError(''); }}
               onKeyDown={e => e.key === 'Enter' && handleSubmit()}
-              className="w-full bg-[#131313] border border-white/10 rounded-xl px-4 py-4 text-[#e5e2e1] text-base outline-none focus:border-[#9745FF]/50"
+              className={`w-full border rounded-xl px-4 py-4 text-[#e5e2e1] text-base outline-none transition-all ${isLibrary ? 'library-input' : 'bg-[#131313] border-white/10 focus:border-[#9745FF]/50'}`}
             />
             {error && <p className="text-red-400/80 text-sm text-center">{error}</p>}
             <button
               onClick={handleSubmit}
               disabled={!input.trim()}
-              className="w-full bg-[#1a1428] border border-[#9745FF]/30 text-[#9745FF] font-headline font-bold tracking-[0.3em] uppercase py-5 rounded-xl active:scale-[0.98] transition-all disabled:opacity-30"
+              className={`w-full border font-headline font-bold tracking-[0.3em] uppercase py-5 rounded-xl active:scale-[0.98] transition-all disabled:opacity-30 ${isLibrary ? 'library-cta' : 'bg-[#1a1428] border-[#9745FF]/30 text-[#9745FF]'}`}
             >
               {isLibrary ? 'גלו את הספר הבא' : 'גלו את התחנה הבאה'}
             </button>
@@ -99,7 +99,7 @@ export default function TransitionRiddleView({ prompt, answer, media, gameType, 
         ) : (
           <button
             onClick={onComplete}
-            className="w-full bg-[#1a1428] border border-[#9745FF]/30 text-[#9745FF] font-headline font-bold tracking-[0.3em] uppercase py-5 rounded-xl active:scale-[0.98] transition-all"
+            className={`w-full border font-headline font-bold tracking-[0.3em] uppercase py-5 rounded-xl active:scale-[0.98] transition-all ${isLibrary ? 'library-cta' : 'bg-[#1a1428] border-[#9745FF]/30 text-[#9745FF]'}`}
           >
             המשיכו
           </button>
