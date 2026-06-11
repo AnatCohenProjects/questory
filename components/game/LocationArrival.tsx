@@ -11,7 +11,14 @@ interface LocationArrivalProps {
   onBack?: () => void;
 }
 
-export default function LocationArrival({ stationNumber, gameType, bookTitle, bookAuthor, onContinue, onBack }: LocationArrivalProps) {
+export default function LocationArrival({
+  stationNumber,
+  gameType,
+  bookTitle,
+  bookAuthor,
+  onContinue,
+  onBack,
+}: LocationArrivalProps) {
   const isLibrary = gameType === 'library';
   const stationLabel = isLibrary ? 'ספר' : 'תחנה';
   const arrivedLabel = isLibrary ? 'הגעתם לספר' : 'הגעתם לתחנה';
@@ -19,7 +26,6 @@ export default function LocationArrival({ stationNumber, gameType, bookTitle, bo
 
   return (
     <div className="min-h-screen bg-[#0E0E0E] text-[#e5e2e1] flex flex-col items-center justify-center px-6" dir="rtl">
-
       <div className="fixed top-1/3 left-1/2 -translate-x-1/2 w-96 h-96 bg-[#00FBFB]/6 rounded-full blur-[140px] pointer-events-none" />
 
       <header className="fixed top-0 w-full z-50 flex justify-between items-center px-6 py-4 bg-[#0E0E0E]/60 backdrop-blur-xl border-b border-white/5">
@@ -45,12 +51,13 @@ export default function LocationArrival({ stationNumber, gameType, bookTitle, bo
       </header>
 
       <div className="relative z-10 flex flex-col items-center text-center max-w-sm w-full gap-6 anim-fade-up">
-
-        <div className="flex items-center gap-3">
-          <div className="h-px w-10 bg-[#00FBFB]/40" />
-          <p className="text-[10px] uppercase tracking-[0.35em] text-[#00FBFB]/70">אות זוהה</p>
-          <div className="h-px w-10 bg-[#00FBFB]/40" />
-        </div>
+        {!isLibrary && (
+          <div className="flex items-center gap-3">
+            <div className="h-px w-10 bg-[#00FBFB]/40" />
+            <p className="text-[10px] uppercase tracking-[0.35em] text-[#00FBFB]/70">אות זוהה</p>
+            <div className="h-px w-10 bg-[#00FBFB]/40" />
+          </div>
+        )}
 
         <div className="space-y-1">
           <h1 className="font-headline text-5xl font-bold tracking-tight text-white leading-none">
@@ -64,9 +71,7 @@ export default function LocationArrival({ stationNumber, gameType, bookTitle, bo
               >
                 {bookTitle}
               </h2>
-              {bookAuthor && (
-                <p className="text-[#e5e2e1]/40 text-sm">{bookAuthor}</p>
-              )}
+              {bookAuthor && <p className="text-[#e5e2e1]/40 text-sm">{bookAuthor}</p>}
             </div>
           ) : !isLibrary ? (
             <h2
