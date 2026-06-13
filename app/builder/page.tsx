@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { GameDraft, StationDraft, emptyStation, defaultDraft, draftToGame } from '@/types/builder';
 import { zichronYaakovDraft } from '@/lib/zichronYaakovDraft';
 import { libraryDraft } from '@/lib/libraryDraft';
+import { isQuotaExceededError, MAX_LOCAL_STORAGE_ITEM_BYTES, estimateStoredValueBytes, validateDraftImagePayloads } from '@/lib/builderImage';
 import { Blueprint, BlueprintStation, generateBlueprint } from '@/lib/blueprintEngine';
 import SidePanel from '@/components/builder/SidePanel';
 import GameMetaForm from '@/components/builder/GameMetaForm';
@@ -15,15 +16,50 @@ export type ActiveView =
   | { type: 'station'; id: number }
   | { type: 'blueprint' };
 
+function createEmptyDraft(): GameDraft {
+  return { ...defaultDraft, stations: [emptyStation(0)] };
+}
+
+function normalizeLoadedDraft(saved: GameDraft): GameDraft {
+  const base = createEmptyDraft();
+  const stations = saved.stations?.length ? saved.stations : base.stations;
+
+  return {
+    ...base,
+    ...saved,
+    stations,
+  };
+}
+
 export default function BuilderPage() {
-  const [draft, setDraft] = useState<GameDraft>(() => {
-    if (typeof window === 'undefined') return { ...defaultDraft, stations: [emptyStation(0)] };
-    const saved = localStorage.getItem('questory_builder_draft');
-    if (saved) try { return JSON.parse(saved) as GameDraft; } catch {}
-    return { ...defaultDraft, stations: [emptyStation(0)] };
-  });
+  const [draft, setDraft] = useState<GameDraft>(createEmptyDraft);
   const [active, setActive] = useState<ActiveView>({ type: 'meta' });
   const [blueprint, setBlueprint] = useState<Blueprint | null>(null);
+  const [storageError, setStorageError] = useState<string | null>(null);
+  const [draftLoaded, setDraftLoaded] = useState(false);
+
+  const persistJsonToLocalStorage = useCallback((key: string, value: unknown, quotaMessage: string) => {
+    const serialized = JSON.stringify(value);
+
+    if (estimateStoredValueBytes(serialized) > MAX_LOCAL_STORAGE_ITEM_BYTES) {
+      setStorageError(quotaMessage);
+      return false;
+    }
+
+    try {
+      localStorage.setItem(key, serialized);
+      setStorageError(null);
+      return true;
+    } catch (error) {
+      if (isQuotaExceededError(error)) {
+        setStorageError(quotaMessage);
+        return false;
+      }
+
+      setStorageError('לא הצלחנו לשמור את הטיוטה המקומית. אפשר להמשיך לערוך ולנסות שוב.');
+      return false;
+    }
+  }, []);
 
   const updateDraft = useCallback((updates: Partial<GameDraft>) => {
     setDraft(prev => {
@@ -56,8 +92,35 @@ export default function BuilderPage() {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('questory_builder_draft', JSON.stringify(draft));
-  }, [draft]);
+    try {
+      const saved = localStorage.getItem('questory_builder_draft');
+      if (saved) {
+        setDraft(normalizeLoadedDraft(JSON.parse(saved) as GameDraft));
+      }
+    } catch {
+      setStorageError('לא הצלחנו לטעון את הטיוטה המקומית. אפשר להמשיך לערוך או להתחיל טיוטה חדשה.');
+    } finally {
+      setDraftLoaded(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!draftLoaded) {
+      return;
+    }
+
+    const imageValidation = validateDraftImagePayloads(draft);
+    if (!imageValidation.ok) {
+      setStorageError(imageValidation.error);
+      return;
+    }
+
+    persistJsonToLocalStorage(
+      'questory_builder_draft',
+      draft,
+      'לא ניתן לשמור את הטיוטה המקומית כי התמונות גדולות מדי. הקטינו אחת מהן ונסו שוב.',
+    );
+  }, [draft, draftLoaded, persistJsonToLocalStorage]);
 
   const updateStation = useCallback((id: number, updates: Partial<StationDraft>) => {
     setDraft(prev => ({
@@ -115,8 +178,22 @@ export default function BuilderPage() {
   }, []);
 
   const handlePreview = () => {
+    const imageValidation = validateDraftImagePayloads(draft);
+    if (!imageValidation.ok) {
+      setStorageError(imageValidation.error);
+      return;
+    }
+
     const game = draftToGame(draft);
-    localStorage.setItem('questory_preview_game', JSON.stringify(game));
+    const saved = persistJsonToLocalStorage(
+      'questory_preview_game',
+      game,
+      'לא ניתן לשמור את התצוגה המקדימה כי התמונות גדולות מדי. נסו להקטין אחת מהן ולנסות שוב.',
+    );
+    if (!saved) {
+      return;
+    }
+
     window.open('/play/preview', '_blank');
   };
 
@@ -125,7 +202,15 @@ export default function BuilderPage() {
       const res = await fetch('/api/load-jekron');
       const data = await res.json();
       if (data.success) {
-        localStorage.setItem('questory_preview_game', JSON.stringify(data.game));
+        const saved = persistJsonToLocalStorage(
+          'questory_preview_game',
+          data.game,
+          'לא ניתן לשמור את תצוגת הדמו כי התמונות גדולות מדי לתצוגה מקדימה.',
+        );
+        if (!saved) {
+          return;
+        }
+
         window.open('/play/preview', '_blank');
       }
     } catch (error) {
@@ -146,7 +231,8 @@ export default function BuilderPage() {
 
   const handleNewDraft = () => {
     localStorage.removeItem('questory_builder_draft');
-    setDraft({ ...defaultDraft, stations: [emptyStation(0)] });
+    setStorageError(null);
+    setDraft(createEmptyDraft());
     setActive({ type: 'meta' });
   };
 
@@ -312,6 +398,12 @@ export default function BuilderPage() {
           </button>
         </div>
       </header>
+
+      {storageError && (
+        <div className="shrink-0 border-b border-red-400/20 bg-red-500/10 px-6 py-3 text-sm text-red-100">
+          {storageError}
+        </div>
+      )}
 
       {/* Body */}
       <div className="flex flex-1 overflow-hidden">

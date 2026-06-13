@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { prepareBuilderImageFile, validateBuilderImageValue } from '@/lib/builderImage';
 
 interface ImageUploadProps {
   currentUrl?: string;
@@ -10,42 +11,74 @@ interface ImageUploadProps {
 
 export default function ImageUpload({ currentUrl, onImageChange, label = 'תמונה' }: ImageUploadProps) {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [inputValue, setInputValue] = useState(currentUrl || '');
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    setInputValue(currentUrl || '');
+  }, [currentUrl]);
+
+  const commitImageValue = (nextValue: string) => {
+    const result = validateBuilderImageValue(nextValue);
+
+    if (!result.ok) {
+      setError(result.error);
+      if (nextValue.trim().startsWith('data:image/')) {
+        setInputValue(currentUrl || '');
+      }
+      return;
+    }
+
+    setError('');
+    onImageChange(result.value);
+  };
+
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = '';
+
     if (!file) return;
 
     setLoading(true);
-    const reader = new FileReader();
+    const result = await prepareBuilderImageFile(file);
+    setLoading(false);
 
-    reader.onload = (event) => {
-      const dataUrl = event.target?.result as string;
-      onImageChange(dataUrl);
-      setLoading(false);
-    };
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
 
-    reader.readAsDataURL(file);
+    setError('');
+    setInputValue(result.value);
+    onImageChange(result.value);
   };
 
-  const handlePaste = async (e: React.ClipboardEvent) => {
+  const handlePaste = async (e: React.ClipboardEvent<HTMLInputElement>) => {
     const items = e.clipboardData?.items;
     if (!items) return;
 
-    for (let item of items) {
-      if (item.type.startsWith('image/')) {
-        e.preventDefault();
-        setLoading(true);
-        const file = item.getAsFile();
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const dataUrl = event.target?.result as string;
-          onImageChange(dataUrl);
-          setLoading(false);
-        };
-        reader.readAsDataURL(file);
+    for (const item of items) {
+      if (!item.type.startsWith('image/')) {
+        continue;
       }
+
+      e.preventDefault();
+      const file = item.getAsFile();
+      if (!file) return;
+
+      setLoading(true);
+      const result = await prepareBuilderImageFile(file);
+      setLoading(false);
+
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+
+      setError('');
+      setInputValue(result.value);
+      onImageChange(result.value);
+      return;
     }
   };
 
@@ -67,22 +100,44 @@ export default function ImageUpload({ currentUrl, onImageChange, label = 'תמו
             className="hidden"
           />
           <div className="w-full py-3 rounded-xl border border-dashed border-[#3a4a49]/60 text-[#e5e2e1]/40 text-sm hover:border-[#00FBFB]/30 hover:text-[#00FBFB]/60 transition-colors text-center">
-            {loading ? 'העלאה...' : '📁 בחרו תמונה'}
+            {loading ? 'מעלה...' : '📁 בחרו תמונה'}
           </div>
         </label>
 
         <input
           type="text"
           placeholder="או הדביקו URL"
-          value={currentUrl || ''}
-          onChange={(e) => onImageChange(e.target.value)}
+          value={inputValue}
+          onChange={(e) => {
+            const nextValue = e.target.value;
+            setInputValue(nextValue);
+
+            if (!nextValue.trim()) {
+              setError('');
+              onImageChange('');
+              return;
+            }
+
+            if (nextValue.trim().startsWith('data:image/') && nextValue.includes(',')) {
+              commitImageValue(nextValue);
+              return;
+            }
+
+            setError('');
+            onImageChange(nextValue);
+          }}
+          onBlur={() => commitImageValue(inputValue)}
           onPaste={handlePaste}
           className="flex-1 bg-[#0a0a0a] border border-[#3a4a49]/60 rounded-xl px-4 py-3 text-[#e5e2e1] text-sm placeholder:text-[#e5e2e1]/20 focus:border-[#00FBFB]/50 outline-none transition-colors"
         />
       </div>
 
       {currentUrl && currentUrl.startsWith('data:') && (
-        <p className="text-[10px] text-[#00FBFB]/50">✓ תמונה מהמחשב שלך (Base64)</p>
+        <p className="text-[10px] text-[#00FBFB]/50">✓ תמונה מהמחשב שלכם</p>
+      )}
+
+      {error && (
+        <p className="text-[11px] leading-relaxed text-red-300">{error}</p>
       )}
     </div>
   );
