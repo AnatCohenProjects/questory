@@ -11,7 +11,7 @@ export default function LandingScreen({ game, onEnter }: LandingScreenProps) {
   const stationCount = game.stations.length;
   const rawGameTitle = game.title?.trim();
   const gameTitle = rawGameTitle && rawGameTitle !== 'משחק ללא שם' ? rawGameTitle : 'חוויה לדוגמה';
-  const meta = [game.duration, game.difficulty, `${stationCount} תחנות`].filter(Boolean).join(' · ');
+  const meta = [game.duration, `${stationCount} תחנות`].filter(Boolean).join(' · ');
   return (
     <div className="relative min-h-screen bg-[#0E0E0E] text-[#e5e2e1] flex flex-col items-center overflow-hidden">
 

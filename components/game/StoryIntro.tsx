@@ -80,12 +80,6 @@ export default function StoryIntro({ game, onStart, onBack }: StoryIntroProps) {
                     <span className="text-[11px] uppercase tracking-wider text-[#e5e2e1]">{game.duration}</span>
                   </div>
                 )}
-                {game.difficulty && (
-                  <div className="glass-panel flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-white/10">
-                    <span className="text-[#e9c349] text-xs">◆</span>
-                    <span className="text-[11px] uppercase tracking-wider text-[#e5e2e1]">{game.difficulty}</span>
-                  </div>
-                )}
               </div>
             </div>
           </div>
