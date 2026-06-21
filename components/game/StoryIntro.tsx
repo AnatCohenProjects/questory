@@ -13,6 +13,7 @@ export default function StoryIntro({ game, onStart, onBack }: StoryIntroProps) {
   const [started, setStarted] = useState(false);
   const [heroImageFailed, setHeroImageFailed] = useState(false);
   const heroImageUrl = game.imageUrl?.trim();
+  const heroMedia = game.heroMedia ?? (heroImageUrl ? { type: 'image' as const, url: heroImageUrl } : null);
   const characterName = game.character?.name?.trim() || 'המדריך';
   const characterQuote = game.character?.tone?.trim() || 'אני אתן לכם רמזים כשצריך ואעזור לכם להתקדם בין התחנות.';
 
@@ -25,7 +26,7 @@ export default function StoryIntro({ game, onStart, onBack }: StoryIntroProps) {
     onStart();
   };
 
-  const hasHeroImage = Boolean(heroImageUrl && !heroImageFailed);
+  const hasHeroImage = Boolean(heroMedia?.url && (heroMedia.type !== 'image' || !heroImageFailed));
 
   return (
     <div className="relative min-h-screen bg-[#0E0E0E] text-[#e5e2e1] flex flex-col items-center overflow-x-hidden" dir="rtl">
@@ -58,15 +59,33 @@ export default function StoryIntro({ game, onStart, onBack }: StoryIntroProps) {
             : 'lg:max-w-xl lg:min-h-screen lg:justify-center'
         }`}
       >
-        {hasHeroImage && (
+        {hasHeroImage && heroMedia && (
           <div className="lg:order-2">
             <div className="relative w-full aspect-[4/5] sm:aspect-[3/4] lg:aspect-[4/5] lg:max-h-[680px] mb-8 sm:mb-10 lg:mb-0 rounded-xl lg:rounded-2xl overflow-hidden shadow-[0_0_40px_rgba(0,0,0,0.8)] anim-fade-in">
-              <img
-                src={heroImageUrl}
-                alt={game.title}
-                className="w-full h-full object-cover"
-                onError={() => setHeroImageFailed(true)}
-              />
+              {heroMedia.type === 'video' ? (
+                <video
+                  src={heroMedia.url}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  className="w-full h-full object-cover"
+                />
+              ) : heroMedia.type === 'audio' ? (
+                <div className="w-full h-full bg-[#0E0E0E] flex flex-col items-center justify-center gap-4 px-6">
+                  <div className="w-16 h-16 rounded-full border border-[#00FBFB]/30 flex items-center justify-center">
+                    <span className="text-3xl">🎵</span>
+                  </div>
+                  <audio src={heroMedia.url} autoPlay loop controls className="w-full" />
+                </div>
+              ) : (
+                <img
+                  src={heroMedia.url}
+                  alt={game.title}
+                  className="w-full h-full object-cover"
+                  onError={() => setHeroImageFailed(true)}
+                />
+              )}
 
               <div
                 className="absolute inset-0"

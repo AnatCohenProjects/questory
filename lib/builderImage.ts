@@ -5,9 +5,18 @@ const MAX_DATA_IMAGE_BYTES = 850 * 1024;
 const MAX_IMAGE_DIMENSION = 1600;
 const JPEG_QUALITY = 0.82;
 
+const MAX_ORIGINAL_AUDIO_FILE_BYTES = 3 * 1024 * 1024;
+const MAX_ORIGINAL_VIDEO_FILE_BYTES = 10 * 1024 * 1024;
+
+export type MediaType = 'image' | 'video' | 'audio';
+
 type ImageSuccess = { ok: true; value: string };
 type ImageFailure = { ok: false; error: string };
 export type BuilderImageResult = ImageSuccess | ImageFailure;
+
+type MediaSuccess = { ok: true; value: string; mediaType: MediaType };
+type MediaFailure = { ok: false; error: string };
+export type BuilderMediaResult = MediaSuccess | MediaFailure;
 
 type ValidationSuccess = { ok: true };
 type ValidationFailure = { ok: false; error: string };
@@ -21,6 +30,57 @@ export const MAX_LOCAL_STORAGE_ITEM_BYTES = 3_500_000;
 
 export function isImageDataUrl(value?: string | null): value is string {
   return typeof value === 'string' && value.trim().startsWith('data:image/');
+}
+
+export function getMediaTypeFromFile(file: File): MediaType | null {
+  if (file.type.startsWith('image/')) return 'image';
+  if (file.type.startsWith('video/')) return 'video';
+  if (file.type.startsWith('audio/')) return 'audio';
+  return null;
+}
+
+export function getMediaTypeFromUrl(url: string): MediaType {
+  const lower = (url || '').toLowerCase();
+  if (lower.startsWith('data:video/') || /\.(mp4|webm|mov|avi|mkv)(\?|$)/.test(lower)) return 'video';
+  if (lower.startsWith('data:audio/') || /\.(mp3|wav|ogg|aac|flac|m4a)(\?|$)/.test(lower)) return 'audio';
+  return 'image';
+}
+
+export async function prepareBuilderMediaFile(file: File): Promise<BuilderMediaResult> {
+  const mediaType = getMediaTypeFromFile(file);
+
+  if (!mediaType) {
+    return { ok: false, error: 'סוג קובץ לא נתמך. ניתן להעלות תמונות, וידאו ואודיו.' };
+  }
+
+  if (mediaType === 'image') {
+    const result = await prepareBuilderImageFile(file);
+    if (!result.ok) return result;
+    return { ok: true, value: result.value, mediaType: 'image' };
+  }
+
+  if (mediaType === 'audio') {
+    if (file.size > MAX_ORIGINAL_AUDIO_FILE_BYTES) {
+      return { ok: false, error: 'קובץ האודיו גדול מדי (מקסימום 3MB). נסו קטע קצר יותר, או השתמשו ב-URL.' };
+    }
+    try {
+      const dataUrl = await readFileAsDataUrl(file);
+      return { ok: true, value: dataUrl, mediaType: 'audio' };
+    } catch {
+      return { ok: false, error: 'לא הצלחנו לעבד את קובץ האודיו.' };
+    }
+  }
+
+  // video
+  if (file.size > MAX_ORIGINAL_VIDEO_FILE_BYTES) {
+    return { ok: false, error: 'קובץ הוידאו גדול מדי (מקסימום 10MB). נסו קטע קצר יותר, או השתמשו ב-URL.' };
+  }
+  try {
+    const dataUrl = await readFileAsDataUrl(file);
+    return { ok: true, value: dataUrl, mediaType: 'video' };
+  } catch {
+    return { ok: false, error: 'לא הצלחנו לעבד את קובץ הוידאו.' };
+  }
 }
 
 export function estimateStoredValueBytes(value: string): number {

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { use } from 'react';
 import { Game, GameSession, CompletedStation } from '@/types/game';
 import { sampleGame } from '@/lib/sampleGame';
+import { loadPreviewGame } from '@/lib/previewStorage';
 import StoryIntro from '@/components/game/StoryIntro';
 import MapNextStep from '@/components/game/MapNextStep';
 import TriggerInput from '@/components/game/TriggerInput';
@@ -129,12 +130,15 @@ export default function GamePage({ params }: { params: Promise<{ gameId: string 
 
   useEffect(() => {
     if (gameId === 'preview') {
-      const stored = localStorage.getItem('questory_preview_game');
-      if (stored) {
-        try { setGame(withPlayerCharacterDefaults(JSON.parse(stored))); } catch { setGame(withPlayerCharacterDefaults(sampleGame)); }
-      } else {
-        setGame(withPlayerCharacterDefaults(sampleGame));
-      }
+      loadPreviewGame()
+        .then(stored => {
+          if (stored) {
+            setGame(withPlayerCharacterDefaults(stored as Game));
+          } else {
+            setGame(withPlayerCharacterDefaults(sampleGame));
+          }
+        })
+        .catch(() => setGame(withPlayerCharacterDefaults(sampleGame)));
     } else {
       setGame(withPlayerCharacterDefaults(sampleGame));
     }
@@ -210,6 +214,13 @@ export default function GamePage({ params }: { params: Promise<{ gameId: string 
 
   const handleSuccessContinue = () => {
     if (!game || !session) return;
+
+    const justCompleted = game.stations[session.currentStationId - 1];
+    if (justCompleted?.transitionRiddle?.enabled && session.currentStationId < game.stations.length) {
+      navigateTo({ phase: 'transition_riddle', session, lastAnswer });
+      return;
+    }
+
     if (game.gameType === 'library') {
       if (session.currentStationId >= game.stations.length) {
         navigateTo({ phase: 'final', session, lastAnswer });

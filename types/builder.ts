@@ -199,13 +199,18 @@ export function getAutoConfigForStyle(style: ExperienceStyle): Partial<GameDraft
 // ─── Conversion ───────────────────────────────────────────────────────────────
 
 export function draftToGame(draft: GameDraft): Game {
-  const heroImageUrl = draft.media.find(item => item.type === 'image' && item.url?.trim())?.url?.trim();
+  const heroItem = draft.media.find(
+    item => (item.type === 'image' || item.type === 'video' || item.type === 'audio') && item.url?.trim()
+  );
+  const heroUrl = heroItem?.url?.trim();
+  const heroType = heroItem?.type as 'image' | 'video' | 'audio' | undefined;
 
   return {
     id: 'preview',
     title: draft.title || 'משחק ללא שם',
     story: draft.story,
-    imageUrl: heroImageUrl || undefined,
+    imageUrl: heroType === 'image' ? heroUrl : undefined,
+    heroMedia: heroUrl && heroType ? { type: heroType, url: heroUrl } : undefined,
     mapMedia: draft.mapMedia,
     duration: draft.duration,
     difficulty: draft.difficulty,

@@ -7,11 +7,26 @@ interface LandingScreenProps {
   onEnter: () => void;
 }
 
+function HeroMedia({ url, type, title, className }: { url: string; type: 'image' | 'video' | 'audio'; title: string; className?: string }) {
+  if (type === 'video') {
+    return <video src={url} autoPlay muted loop playsInline className={className} />;
+  }
+  if (type === 'audio') {
+    return (
+      <div className={`flex items-center justify-center bg-[#0E0E0E] ${className}`}>
+        <audio src={url} autoPlay loop controls className="w-4/5" />
+      </div>
+    );
+  }
+  return <img src={url} alt={title} className={className} />;
+}
+
 export default function LandingScreen({ game, onEnter }: LandingScreenProps) {
   const stationCount = game.stations.length;
   const rawGameTitle = game.title?.trim();
   const gameTitle = rawGameTitle && rawGameTitle !== 'משחק ללא שם' ? rawGameTitle : 'חוויה לדוגמה';
   const meta = [game.duration, `${stationCount} תחנות`].filter(Boolean).join(' · ');
+  const hero = game.heroMedia ?? (game.imageUrl ? { type: 'image' as const, url: game.imageUrl } : null);
   return (
     <div className="relative min-h-screen bg-[#0E0E0E] text-[#e5e2e1] flex flex-col items-center overflow-hidden">
 
@@ -20,10 +35,10 @@ export default function LandingScreen({ game, onEnter }: LandingScreenProps) {
       <div className="fixed bottom-1/4 -right-20 w-72 h-72 bg-[#e9c349]/4 rounded-full blur-[120px] pointer-events-none" />
 
       {/* Hero — full bleed on mobile, split layout on wide screens */}
-      <div className={`relative w-full max-w-md lg:max-w-6xl lg:min-h-screen lg:flex lg:items-center lg:px-8 lg:py-12 overflow-hidden ${game.imageUrl ? 'aspect-[9/16] min-h-screen lg:aspect-auto' : ''}`}>
-        {game.imageUrl && (
+      <div className={`relative w-full max-w-md lg:max-w-6xl lg:min-h-screen lg:flex lg:items-center lg:px-8 lg:py-12 overflow-hidden ${hero ? 'aspect-[9/16] min-h-screen lg:aspect-auto' : ''}`}>
+        {hero && (
           <>
-            <img src={game.imageUrl} alt={gameTitle} className="w-full h-full object-cover lg:hidden" />
+            <HeroMedia url={hero.url} type={hero.type} title={gameTitle} className="w-full h-full object-cover lg:hidden" />
             <div
               className="absolute inset-0 lg:hidden"
               style={{ background: 'linear-gradient(180deg, rgba(14,14,14,0.2) 0%, rgba(14,14,14,0.5) 40%, rgba(14,14,14,0.97) 75%, rgba(14,14,14,1) 100%)' }}
@@ -32,7 +47,7 @@ export default function LandingScreen({ game, onEnter }: LandingScreenProps) {
         )}
 
         {/* Content — absolute over image on mobile, two columns on wide screens */}
-        <div className={game.imageUrl ? 'absolute inset-0 flex flex-col justify-between px-6 py-10 lg:static lg:grid lg:w-full lg:grid-cols-[minmax(0,0.95fr)_minmax(380px,1.05fr)] lg:items-center lg:gap-10 lg:px-0 lg:py-0' : 'flex flex-col gap-8 px-6 py-10 lg:grid lg:w-full lg:grid-cols-[minmax(0,0.95fr)_minmax(380px,1.05fr)] lg:items-center lg:gap-10 lg:px-0 lg:py-0'}>
+        <div className={hero ? 'absolute inset-0 flex flex-col justify-between px-6 py-10 lg:static lg:grid lg:w-full lg:grid-cols-[minmax(0,0.95fr)_minmax(380px,1.05fr)] lg:items-center lg:gap-10 lg:px-0 lg:py-0' : 'flex flex-col gap-8 px-6 py-10 lg:grid lg:w-full lg:grid-cols-[minmax(0,0.95fr)_minmax(380px,1.05fr)] lg:items-center lg:gap-10 lg:px-0 lg:py-0'}>
 
           {/* Hero copy */}
           <div className="flex flex-col gap-8 lg:max-w-xl">
@@ -77,9 +92,9 @@ export default function LandingScreen({ game, onEnter }: LandingScreenProps) {
               </p>
             </div>
 
-            {game.imageUrl && (
+            {hero && (
               <div className="hidden lg:block relative w-full aspect-[16/7] rounded-2xl overflow-hidden border border-[#3a4a49]/40 shadow-[0_0_35px_rgba(0,251,251,0.08)]">
-                <img src={game.imageUrl} alt={gameTitle} className="w-full h-full object-cover" />
+                <HeroMedia url={hero.url} type={hero.type} title={gameTitle} className="w-full h-full object-cover" />
                 <div
                   className="absolute inset-0"
                   style={{ background: 'linear-gradient(90deg, rgba(14,14,14,0.78) 0%, rgba(14,14,14,0.18) 52%, rgba(14,14,14,0.78) 100%)' }}
@@ -102,8 +117,10 @@ export default function LandingScreen({ game, onEnter }: LandingScreenProps) {
                 className="w-full flex items-center gap-4 bg-[#151d1d] border border-[#00FBFB]/25 rounded-2xl p-4 lg:p-5 active:scale-[0.98] transition-all text-right hover:border-[#00FBFB]/45 hover:bg-[#172323] shadow-[0_0_22px_rgba(0,251,251,0.06)]"
               >
                 <div className="w-14 h-14 lg:w-16 lg:h-16 rounded-xl overflow-hidden flex-shrink-0 bg-[#1a2a2a]">
-                  {game.imageUrl
-                    ? <img src={game.imageUrl} alt={gameTitle} className="w-full h-full object-cover" />
+                  {hero?.type === 'image'
+                    ? <img src={hero.url} alt={gameTitle} className="w-full h-full object-cover" />
+                    : hero?.type === 'video'
+                    ? <video src={hero.url} muted playsInline className="w-full h-full object-cover" />
                     : <div className="w-full h-full flex items-center justify-center"><span className="text-[#00FBFB] text-xl font-bold font-headline">Q</span></div>
                   }
                 </div>

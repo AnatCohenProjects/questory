@@ -5,6 +5,7 @@ import { GameDraft, StationDraft, emptyStation, defaultDraft, draftToGame } from
 import { zichronYaakovDraft } from '@/lib/zichronYaakovDraft';
 import { libraryDraft } from '@/lib/libraryDraft';
 import { isQuotaExceededError, MAX_LOCAL_STORAGE_ITEM_BYTES, estimateStoredValueBytes, validateDraftImagePayloads } from '@/lib/builderImage';
+import { savePreviewGame, saveDraft, loadDraft } from '@/lib/previewStorage';
 import { Blueprint, BlueprintStation, generateBlueprint } from '@/lib/blueprintEngine';
 import SidePanel from '@/components/builder/SidePanel';
 import GameMetaForm from '@/components/builder/GameMetaForm';
@@ -92,22 +93,20 @@ export default function BuilderPage() {
   }, []);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('questory_builder_draft');
-      if (saved) {
-        setDraft(normalizeLoadedDraft(JSON.parse(saved) as GameDraft));
-      }
-    } catch {
-      setStorageError('לא הצלחנו לטעון את הטיוטה המקומית. אפשר להמשיך לערוך או להתחיל טיוטה חדשה.');
-    } finally {
-      setDraftLoaded(true);
-    }
+    loadDraft()
+      .then(saved => {
+        if (saved) {
+          setDraft(normalizeLoadedDraft(saved as GameDraft));
+        }
+      })
+      .catch(() => {
+        setStorageError('לא הצלחנו לטעון את הטיוטה המקומית. אפשר להמשיך לערוך או להתחיל טיוטה חדשה.');
+      })
+      .finally(() => setDraftLoaded(true));
   }, []);
 
   useEffect(() => {
-    if (!draftLoaded) {
-      return;
-    }
+    if (!draftLoaded) return;
 
     const imageValidation = validateDraftImagePayloads(draft);
     if (!imageValidation.ok) {
@@ -115,12 +114,10 @@ export default function BuilderPage() {
       return;
     }
 
-    persistJsonToLocalStorage(
-      'questory_builder_draft',
-      draft,
-      'לא ניתן לשמור את הטיוטה המקומית כי התמונות גדולות מדי. הקטינו אחת מהן ונסו שוב.',
-    );
-  }, [draft, draftLoaded, persistJsonToLocalStorage]);
+    saveDraft(draft)
+      .then(() => setStorageError(null))
+      .catch(() => setStorageError('לא הצלחנו לשמור את הטיוטה. נסו שוב.'));
+  }, [draft, draftLoaded]);
 
   const updateStation = useCallback((id: number, updates: Partial<StationDraft>) => {
     setDraft(prev => ({
@@ -177,7 +174,7 @@ export default function BuilderPage() {
     });
   }, []);
 
-  const handlePreview = () => {
+  const handlePreview = async () => {
     const imageValidation = validateDraftImagePayloads(draft);
     if (!imageValidation.ok) {
       setStorageError(imageValidation.error);
@@ -185,12 +182,11 @@ export default function BuilderPage() {
     }
 
     const game = draftToGame(draft);
-    const saved = persistJsonToLocalStorage(
-      'questory_preview_game',
-      game,
-      'לא ניתן לשמור את התצוגה המקדימה כי התמונות גדולות מדי. נסו להקטין אחת מהן ולנסות שוב.',
-    );
-    if (!saved) {
+    try {
+      await savePreviewGame(game);
+      setStorageError(null);
+    } catch {
+      setStorageError('לא הצלחנו לשמור את התצוגה המקדימה. נסו שוב.');
       return;
     }
 

@@ -8,7 +8,7 @@ import {
   getAutoConfigForStyle,
 } from '@/types/builder';
 import { GAME_TYPE_PRESETS } from '@/lib/gameTypePresets';
-import ImageUpload from './ImageUpload';
+import MediaUpload from './MediaUpload';
 import DataSourceSelector from './DataSourceSelector';
 import AutoConfigEditor from './AutoConfigEditor';
 
@@ -160,19 +160,20 @@ export default function GameMetaForm({ draft, onUpdate }: GameMetaFormProps) {
           />
         </div>
         <div>
-          <label className={lbl}>תמונה ראשית</label>
-          <ImageUpload
+          <label className={lbl}>מדיה ראשית</label>
+          <MediaUpload
             currentUrl={draft.media?.[0]?.url}
-            onImageChange={(url) => {
-              const newMedia = draft.media || [];
+            currentType={draft.media?.[0]?.type as 'image' | 'video' | 'audio' | undefined}
+            onMediaChange={(url, type) => {
+              const newMedia = [...(draft.media || [])];
               if (newMedia[0]) {
-                newMedia[0] = { ...newMedia[0], url };
+                newMedia[0] = { ...newMedia[0], url, type };
               } else {
-                newMedia[0] = { id: 'game-hero', type: 'image', url, caption: '' };
+                newMedia[0] = { id: 'game-hero', type, url, caption: '' };
               }
               onUpdate({ media: newMedia });
             }}
-            label="תמונת כותרת"
+            label="תמונה / וידאו / אודיו"
           />
         </div>
       </div>
@@ -195,12 +196,14 @@ export default function GameMetaForm({ draft, onUpdate }: GameMetaFormProps) {
           <p className="text-[10px] uppercase tracking-[0.2em] text-[#00FBFB]/60 mb-1">מפה</p>
           <p className="text-xs text-[#e5e2e1]/30 mb-4">העלו מפה של החוויה — לניווט, הקשר מרחבי, או חוויות מבוססות מפה בעתיד</p>
         </div>
-        <ImageUpload
+        <MediaUpload
           currentUrl={draft.mapMedia?.url}
-          onImageChange={(url) => {
-            onUpdate({ mapMedia: { type: 'image', url, caption: '' } });
+          currentType={draft.mapMedia?.type as 'image' | 'video' | undefined}
+          onMediaChange={(url, type) => {
+            onUpdate({ mapMedia: { type: type === 'audio' ? 'image' : type, url, caption: '' } });
           }}
-          label="העלאת מפה"
+          label="מפה"
+          accept={['image', 'video']}
         />
       </div>
 

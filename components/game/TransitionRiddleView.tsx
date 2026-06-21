@@ -64,6 +64,14 @@ export default function TransitionRiddleView({ prompt, answer, media, gameType, 
             {media.type === 'image' && (
               <img src={media.url} alt={media.caption || ''} className="w-full object-cover max-h-56" />
             )}
+            {media.type === 'video' && (
+              <video src={media.url} controls playsInline className="w-full max-h-56" />
+            )}
+            {media.type === 'audio' && (
+              <div className="bg-[#131313] p-4">
+                <audio src={media.url} controls className="w-full" />
+              </div>
+            )}
             {media.caption && (
               <p className="text-[10px] text-[#e5e2e1]/40 text-center px-4 py-2 bg-[#131313]">{media.caption}</p>
             )}

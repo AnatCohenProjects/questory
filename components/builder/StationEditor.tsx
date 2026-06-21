@@ -7,7 +7,7 @@ import { normalizeDataSource } from '@/lib/normalization';
 import { selectPrimaryHook, LogicalHook } from '@/lib/hookDetection';
 import { buildChallengeFromTemplate, TemplateType } from '@/lib/challengeTemplates';
 import ChallengeModal from './ChallengeModal';
-import ImageUpload from './ImageUpload';
+import MediaUpload from './MediaUpload';
 
 interface StationEditorProps {
   station: StationDraft;
@@ -218,41 +218,21 @@ export default function StationEditor({ station, stationNumber, totalStations, g
           <p className="text-[10px] uppercase tracking-[0.2em] text-[#00FBFB]/60 mb-4">מדיה לשלב</p>
         </div>
 
-        {/* Narrative Media */}
-        <div className="mb-6">
-          <label className={lbl}>תמונה — לנרטיב</label>
-          <ImageUpload
-            currentUrl={station.narrativeMedia?.url}
-            onImageChange={(url) => {
-              onUpdate({
-                narrativeMedia: {
-                  type: 'image',
-                  url,
-                  caption: station.narrativeMedia?.caption || '',
-                }
-              });
-            }}
-            label="תמונת סיפור"
-          />
-        </div>
-
-        {/* Task Media */}
-        <div>
-          <label className={lbl}>תמונה — למשימה</label>
-          <ImageUpload
-            currentUrl={station.taskMedia?.url}
-            onImageChange={(url) => {
-              onUpdate({
-                taskMedia: {
-                  type: 'image',
-                  url,
-                  caption: station.taskMedia?.caption || '',
-                }
-              });
-            }}
-            label="תמונת משימה"
-          />
-        </div>
+        <label className={lbl}>מדיה למשימה</label>
+        <MediaUpload
+          currentUrl={station.taskMedia?.url}
+          currentType={station.taskMedia?.type}
+          onMediaChange={(url, type) => {
+            onUpdate({
+              taskMedia: {
+                type,
+                url,
+                caption: station.taskMedia?.caption || '',
+              }
+            });
+          }}
+          label="תמונה / וידאו / אודיו"
+        />
       </div>
 
       {/* Hints */}
@@ -389,16 +369,17 @@ export default function StationEditor({ station, stationNumber, totalStations, g
               <p className="text-[10px] text-[#e5e2e1]/25 mt-1">אפשר להפריד מספר תשובות עם | (כגון: ארנב|rabbit)</p>
             </div>
             <div>
-              <label className={lbl}>תמונה — אופציונלי</label>
-              <ImageUpload
+              <label className={lbl}>מדיה לחידת המעבר — אופציונלי</label>
+              <MediaUpload
                 currentUrl={station.transitionRiddle?.media?.url}
-                onImageChange={(url) => onUpdate({
+                currentType={station.transitionRiddle?.media?.type}
+                onMediaChange={(url, type) => onUpdate({
                   transitionRiddle: {
                     ...station.transitionRiddle!,
-                    media: url ? { type: 'image', url, caption: '' } : undefined,
+                    media: url ? { type, url, caption: '' } : undefined,
                   },
                 })}
-                label="תמונת רמז מעבר"
+                label="תמונה / וידאו / אודיו"
               />
             </div>
           </div>

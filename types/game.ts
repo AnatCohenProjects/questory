@@ -16,6 +16,7 @@ export type Game = {
   title: string;
   story: string;
   imageUrl?: string;
+  heroMedia?: { type: 'image' | 'video' | 'audio'; url: string };
   mapMedia?: StationMedia;
   duration?: string;
   difficulty?: string;

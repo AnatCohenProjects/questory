@@ -160,16 +160,15 @@ export default function StationView({ station, game, session, onComplete, onBack
               {station.narrative}
             </p>
             {station.narrativeMedia && <MediaBlock media={station.narrativeMedia} />}
+            {station.taskMedia && (
+              <div className="space-y-3">
+                {!isLibrary && (
+                  <p className="text-[10px] uppercase tracking-[0.35em] text-[#00FBFB]/70">הוראה</p>
+                )}
+                <MediaBlock media={station.taskMedia} />
+              </div>
+            )}
           </div>
-
-          {station.taskMedia && (
-            <div className="space-y-3 lg:col-start-1 lg:row-start-3 lg:max-w-xl">
-              {!isLibrary && (
-                <p className="text-[10px] uppercase tracking-[0.35em] text-[#00FBFB]/70">הוראה</p>
-              )}
-              <MediaBlock media={station.taskMedia} />
-            </div>
-          )}
 
           {station.challenge && (
             <div className="space-y-5 lg:col-start-2 lg:row-start-1">
