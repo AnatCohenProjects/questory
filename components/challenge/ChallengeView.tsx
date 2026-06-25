@@ -5,6 +5,7 @@ import CipherChallenge from './CipherChallenge';
 import PatternChallenge from './PatternChallenge';
 import OddOneOutChallenge from './OddOneOutChallenge';
 import TriviaChallenge from './TriviaChallenge';
+import PuzzleChallenge from './PuzzleChallenge';
 
 interface ChallengeViewProps {
   challenge: ChallengeData;
@@ -27,6 +28,8 @@ export default function ChallengeView({ challenge, onCodeChange }: ChallengeView
       return <OddOneOutChallenge challenge={challenge} onCodeChange={onCodeChange} />;
     case 'trivia':
       return <TriviaChallenge challenge={challenge} onCodeChange={onCodeChange} />;
+    case 'puzzle':
+      return <PuzzleChallenge challenge={challenge} onCodeChange={onCodeChange} />;
     default:
       return null;
   }

@@ -117,6 +117,21 @@ export const PUZZLE_TEMPLATES: PuzzleTemplate[] = [
     difficultyLevels: ['easy', 'medium', 'hard'],
     suitableObjects: ['מוזיאון', 'אנדרטה', 'לוח מידע', 'שלט היסטורי'],
   },
+  {
+    templateId: 'puzzle',
+    name: 'פאזל תמונה',
+    description: 'שחקנים מרכיבים תמונה מפוצלת לחלקים — מגלים ספר או מיקום',
+    thinkingType: 'transformation',
+    inputType: 'in_app_visual',
+    challengeType: 'puzzle',
+    questionPrompts: [
+      'איזו תמונה תפוצל לחלקים?',
+      'כמה חלקים — קל (4), בינוני (9) או מתקדם (16)?',
+      'מה יתגלה לאחר ההרכבה?',
+    ],
+    difficultyLevels: ['easy', 'medium', 'hard'],
+    suitableObjects: ['עטיפת ספר', 'תמונה היסטורית', 'מפה', 'פורטרט'],
+  },
 ];
 
 /** קבלת Template לפי challengeType */

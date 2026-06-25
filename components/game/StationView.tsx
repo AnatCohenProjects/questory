@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Station, Game, GameSession, StationMedia } from '@/types/game';
 import AIHintChat from './AIHintChat';
 import GameProgress from './GameProgress';
@@ -76,8 +76,25 @@ export default function StationView({ station, game, session, onComplete, onBack
   const [hintsUsed, setHintsUsed] = useState(0);
   const [showReveal, setShowReveal] = useState(false);
   const answerInputRef = useRef<HTMLInputElement>(null);
+  const onCompleteRef = useRef(onComplete);
+  onCompleteRef.current = onComplete;
   const isEmptyAnswerError = error === EMPTY_ANSWER_MESSAGE;
   const isLibrary = game.gameType === 'library';
+  const isPuzzle = station.challenge?.type === 'puzzle';
+
+  const puzzleCompleteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    if (isPuzzle && answer === 'solved') {
+      console.log('[Station] puzzle answer=solved — starting 3s timer');
+      const t = setTimeout(() => {
+        console.log('[Station] timer fired — calling onComplete');
+        onCompleteRef.current('solved');
+      }, 3000);
+      puzzleCompleteTimerRef.current = t;
+      return () => clearTimeout(t);
+    }
+  }, [isPuzzle, answer]);
   const answerHelper = isLibrary ? 'הקלידו את התשובה שמצאתם בספר.' : 'הקלידו את התשובה.';
   const answerPrompt = isLibrary ? null : 'כתבו את הפתרון שמצאתם';
   const answerPlaceholder = isLibrary ? 'כתבו כאן את התשובה' : 'הקלידו כאן את התשובה';
@@ -145,8 +162,8 @@ export default function StationView({ station, game, session, onComplete, onBack
           />
         </header>
 
-        <div className="flex-1 grid grid-cols-1 px-6 lg:px-8 pt-8 lg:pt-10 pb-8 lg:pb-12 gap-6 lg:gap-x-8 lg:gap-y-4 overflow-y-auto max-w-md lg:max-w-6xl mx-auto w-full lg:grid-cols-[minmax(0,0.95fr)_minmax(360px,0.78fr)] lg:items-start">
-          <div className="space-y-2 lg:col-start-1 lg:row-start-1 lg:max-w-xl">
+        <div className={`flex-1 grid grid-cols-1 px-6 lg:px-8 pt-8 lg:pt-10 pb-8 lg:pb-12 gap-6 overflow-y-auto mx-auto w-full ${station.challenge ? 'max-w-md lg:max-w-xl' : 'lg:gap-x-8 lg:gap-y-4 max-w-md lg:max-w-6xl lg:grid-cols-[minmax(0,0.95fr)_minmax(360px,0.78fr)] lg:items-start'}`}>
+          <div className={`space-y-2 ${station.challenge ? '' : 'lg:col-start-1 lg:row-start-1 lg:max-w-xl'}`}>
             <p className="text-[10px] uppercase tracking-[0.35em] text-[#00FBFB]/70">
               תחנה {stationNumber.toString().padStart(2, '0')} | {game.title}
             </p>
@@ -155,29 +172,31 @@ export default function StationView({ station, game, session, onComplete, onBack
             </h1>
           </div>
 
-          <div className="space-y-4 lg:col-start-1 lg:row-start-2 lg:max-w-xl">
-            <p className="text-[#e5e2e1]/60 text-lg leading-relaxed font-light">
-              {station.narrative}
-            </p>
-            {station.narrativeMedia && <MediaBlock media={station.narrativeMedia} />}
-            {station.taskMedia && (
-              <div className="space-y-3">
-                {!isLibrary && (
-                  <p className="text-[10px] uppercase tracking-[0.35em] text-[#00FBFB]/70">הוראה</p>
-                )}
-                <MediaBlock media={station.taskMedia} />
-              </div>
-            )}
-          </div>
+          {!station.challenge && (
+            <div className="space-y-4 lg:col-start-1 lg:row-start-2 lg:max-w-xl">
+              <p className="text-[#e5e2e1]/60 text-lg leading-relaxed font-light">
+                {station.narrative}
+              </p>
+              {station.narrativeMedia && <MediaBlock media={station.narrativeMedia} />}
+              {station.taskMedia && (
+                <div className="space-y-3">
+                  {!isLibrary && (
+                    <p className="text-[10px] uppercase tracking-[0.35em] text-[#00FBFB]/70">הוראה</p>
+                  )}
+                  <MediaBlock media={station.taskMedia} />
+                </div>
+              )}
+            </div>
+          )}
 
           {station.challenge && (
-            <div className="space-y-5 lg:col-start-2 lg:row-start-1">
-              <p className="text-[10px] uppercase tracking-[0.35em] text-[#00FBFB]/70">האתגר</p>
-              <div className={`rounded-2xl overflow-hidden ${isLibrary ? 'library-panel border' : 'bg-[#131313] border border-[#3a4a49]/50'}`}>
+            <div className="space-y-5">
+              <div className={`rounded-2xl ${isLibrary ? 'library-panel border' : 'bg-[#131313] border border-[#3a4a49]/50'}`}>
                 <div className="p-5">
                   <ChallengeView
                     challenge={station.challenge}
                     onCodeChange={(code: string) => {
+                      console.log('[Station] onCodeChange received:', code);
                       setAnswer(code);
                       setError('');
                     }}
@@ -187,89 +206,93 @@ export default function StationView({ station, game, session, onComplete, onBack
             </div>
           )}
 
-          <div className="space-y-4 lg:col-start-2 lg:row-start-2">
-            <div className={`rounded-2xl p-5 space-y-4 ${isLibrary ? 'library-panel border' : 'bg-[#101616] border border-[#00FBFB]/15'}`}>
-              <div className="space-y-2">
-                <p className="font-headline text-base font-bold text-white">הפתרון שלכם</p>
-                {answerPrompt && (
-                  <p className="text-[10px] uppercase tracking-[0.35em] text-[#00FBFB]/70">{answerPrompt}</p>
-                )}
-                <p className="text-[#e5e2e1]/40 text-sm leading-relaxed">
-                  {answerHelper}
-                </p>
-              </div>
+          <div className={`space-y-4 ${station.challenge ? '' : 'lg:col-start-2 lg:row-start-2'}`}>
+            {!isPuzzle && (
+              <div className={`rounded-2xl p-5 space-y-4 ${isLibrary ? 'library-panel border' : 'bg-[#101616] border border-[#00FBFB]/15'}`}>
+                <div className="space-y-2">
+                  <p className="font-headline text-base font-bold text-white">הפתרון שלכם</p>
+                  {answerPrompt && (
+                    <p className="text-[10px] uppercase tracking-[0.35em] text-[#00FBFB]/70">{answerPrompt}</p>
+                  )}
+                  <p className="text-[#e5e2e1]/40 text-sm leading-relaxed">
+                    {answerHelper}
+                  </p>
+                </div>
 
-              {(!station.challenge || station.challenge.type === 'cipher') && (
-                <input
-                  ref={answerInputRef}
-                  type="text"
-                  value={answer}
-                  onChange={(e) => {
-                    setAnswer(e.target.value);
-                    setError('');
-                  }}
-                  onKeyDown={(e) => e.key === 'Enter' && handleSubmitAnswer()}
-                  placeholder={answerPlaceholder}
-                  aria-invalid={isEmptyAnswerError || undefined}
-                  className={`w-full ${isLibrary ? 'library-input' : 'bg-[#131313]'} text-[#e5e2e1] text-lg font-medium text-right py-5 px-5 rounded-xl border outline-none placeholder:text-[#e5e2e1]/25 tracking-normal transition-all ${
-                    isEmptyAnswerError
-                      ? 'border-red-400/70 shadow-[0_0_18px_rgba(248,113,113,0.18)] focus:border-red-300'
-                      : isLibrary
-                        ? 'focus:border-[#D4AF37]/70'
-                        : 'bg-[#131313] border-[#3a4a49] focus:border-[#00FBFB]'
-                  }`}
-                />
-              )}
-
-              {error && <p className="text-red-400 text-sm leading-relaxed">{error}</p>}
-
-              <button
-                onClick={handleSubmitAnswer}
-                disabled={submitting}
-                className={`anim-pulse-cta w-full relative overflow-hidden border font-headline font-bold text-base tracking-[0.4em] uppercase py-5 rounded-xl active:scale-[0.98] transition-all disabled:opacity-25 flex items-center justify-center ${isLibrary ? 'library-cta' : 'bg-[#1a2a2a] border-[#00FBFB]/30 text-[#00FBFB]'}`}
-                style={answer.trim() ? { boxShadow: '0 0 20px rgba(0,251,251,0.08)' } : undefined}
-              >
-                {answer.trim() && !submitting && (
-                  <div
-                    className="absolute inset-0 bg-gradient-to-r from-[#00FBFB]/0 via-[#00FBFB]/8 to-[#00FBFB]/0"
-                    style={{ animation: 'shimmer 2.5s ease-in-out infinite' }}
+                {(!station.challenge || station.challenge.type === 'cipher') && (
+                  <input
+                    ref={answerInputRef}
+                    type="text"
+                    value={answer}
+                    onChange={(e) => {
+                      setAnswer(e.target.value);
+                      setError('');
+                    }}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSubmitAnswer()}
+                    placeholder={answerPlaceholder}
+                    aria-invalid={isEmptyAnswerError || undefined}
+                    className={`w-full ${isLibrary ? 'library-input' : 'bg-[#131313]'} text-[#e5e2e1] text-lg font-medium text-right py-5 px-5 rounded-xl border outline-none placeholder:text-[#e5e2e1]/25 tracking-normal transition-all ${
+                      isEmptyAnswerError
+                        ? 'border-red-400/70 shadow-[0_0_18px_rgba(248,113,113,0.18)] focus:border-red-300'
+                        : isLibrary
+                          ? 'focus:border-[#D4AF37]/70'
+                          : 'bg-[#131313] border-[#3a4a49] focus:border-[#00FBFB]'
+                    }`}
                   />
                 )}
-                <span className="relative z-10">
-                  {submitting ? 'בודק...' : 'בדיקת תשובה'}
-                </span>
-              </button>
-            </div>
 
-            <div className={`backdrop-blur-xl rounded-2xl p-5 space-y-3 ${isLibrary ? 'library-panel-soft border' : 'bg-[#0E0E0E]/85 border border-[#00FBFB]/10'}`}>
-              <button
-                onClick={() => setShowChat(true)}
-                disabled={hintsUsed >= 3}
-                className={`w-full flex items-center justify-center gap-2 rounded-xl py-4 active:scale-[0.98] transition-all disabled:opacity-30 ${isLibrary ? 'library-panel-soft border' : 'bg-[#131313] border border-[#00FBFB]/25'}`}
-                style={hintsUsed < 3 ? { boxShadow: '0 0 15px rgba(0,251,251,0.06)' } : undefined}
-              >
-                <span className="text-lg">💬</span>
-                <span className="text-[#00FBFB] text-sm font-semibold">
-                  {hintsUsed < 3 ? `שאלו את ${game.character.name}` : 'רמזים אזלו'}
-                </span>
-                {hintsUsed > 0 && (
-                  <span className="bg-[#e9c349]/20 text-[#e9c349] text-xs font-bold px-2 py-0.5 rounded-full">
-                    {hintsUsed}/3
+                {error && <p className="text-red-400 text-sm leading-relaxed">{error}</p>}
+
+                <button
+                  onClick={handleSubmitAnswer}
+                  disabled={submitting}
+                  className={`anim-pulse-cta w-full relative overflow-hidden border font-headline font-bold text-base tracking-[0.4em] uppercase py-5 rounded-xl active:scale-[0.98] transition-all disabled:opacity-25 flex items-center justify-center ${isLibrary ? 'library-cta' : 'bg-[#1a2a2a] border-[#00FBFB]/30 text-[#00FBFB]'}`}
+                  style={answer.trim() ? { boxShadow: '0 0 20px rgba(0,251,251,0.08)' } : undefined}
+                >
+                  {answer.trim() && !submitting && (
+                    <div
+                      className="absolute inset-0 bg-gradient-to-r from-[#00FBFB]/0 via-[#00FBFB]/8 to-[#00FBFB]/0"
+                      style={{ animation: 'shimmer 2.5s ease-in-out infinite' }}
+                    />
+                  )}
+                  <span className="relative z-10">
+                    {submitting ? 'בודק...' : 'בדיקת תשובה'}
                   </span>
+                </button>
+              </div>
+            )}
+
+            {!station.challenge && (
+              <div className={`backdrop-blur-xl rounded-2xl p-5 space-y-3 ${isLibrary ? 'library-panel-soft border' : 'bg-[#0E0E0E]/85 border border-[#00FBFB]/10'}`}>
+                <button
+                  onClick={() => setShowChat(true)}
+                  disabled={hintsUsed >= 3}
+                  className={`w-full flex items-center justify-center gap-2 rounded-xl py-4 active:scale-[0.98] transition-all disabled:opacity-30 ${isLibrary ? 'library-panel-soft border' : 'bg-[#131313] border border-[#00FBFB]/25'}`}
+                  style={hintsUsed < 3 ? { boxShadow: '0 0 15px rgba(0,251,251,0.06)' } : undefined}
+                >
+                  <span className="text-lg">💬</span>
+                  <span className="text-[#00FBFB] text-sm font-semibold">
+                    {hintsUsed < 3 ? `שאלו את ${game.character.name}` : 'רמזים אזלו'}
+                  </span>
+                  {hintsUsed > 0 && (
+                    <span className="bg-[#e9c349]/20 text-[#e9c349] text-xs font-bold px-2 py-0.5 rounded-full">
+                      {hintsUsed}/3
+                    </span>
+                  )}
+                </button>
+                {hintsUsed < 3 && (
+                  <p className="text-center text-[#e5e2e1]/35 text-xs leading-relaxed">
+                    אפשר לבקש רמז או לשאול שאלה על המשימה.
+                  </p>
                 )}
-              </button>
-              {hintsUsed < 3 && (
-                <p className="text-center text-[#e5e2e1]/35 text-xs leading-relaxed">
-                  אפשר לבקש רמז או לשאול שאלה על המשימה.
-                </p>
-              )}
-              <button
-                onClick={() => onComplete('', true)}
-                className="w-full text-center text-[#e5e2e1]/20 text-[11px] uppercase tracking-widest hover:text-[#e5e2e1]/40 transition-colors py-1"
-              >
-                דלג על תחנה
-              </button>
-            </div>
+                <button
+                  onClick={() => onComplete('', true)}
+                  className="w-full text-center text-[#e5e2e1]/20 text-[11px] uppercase tracking-widest hover:text-[#e5e2e1]/40 transition-colors py-1"
+                >
+                  דלג על תחנה
+                </button>
+              </div>
+            )}
           </div>
 
           {hintsUsed >= 3 && (
@@ -280,10 +303,10 @@ export default function StationView({ station, game, session, onComplete, onBack
               {!showReveal ? (
                 <div className="flex gap-3">
                   <button
-                    onClick={() => setShowReveal(true)}
+                    onClick={() => { if (isPuzzle) { onComplete('solved', false); } else { setShowReveal(true); } }}
                     className="flex-1 text-[#e5e2e1]/50 text-sm py-3 rounded-xl border border-[#3a4a49]/40 active:scale-95 transition-transform"
                   >
-                    גלה תשובה
+                    {isPuzzle ? 'המשך ממילא' : 'גלה תשובה'}
                   </button>
                   <button
                     onClick={() => onComplete('', true)}

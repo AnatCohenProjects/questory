@@ -17,6 +17,7 @@ export type ChallengeType =
   | 'pattern'     // השלמת סדרה — מספרים/אותיות עם חסרים  (escape room)
   | 'oddoneout'   // מי לא שייך — בחירה מגריד  (escape room)
   | 'trivia'      // שאלת ידע — בחירה מרובה  (universal)
+  | 'puzzle'      // פאזל תמונה — הרכבת חלקים  (universal)
   | 'sorting'     // סדרו בסדר נכון  (universal — future)
   | 'observation' // מציאת אובייקט בשטח — ללא widget, רק task+hints  (outdoor — future)
   | 'photo';      // צלמו תמונה  (future — requires camera)
@@ -74,13 +75,28 @@ export interface TriviaChallengeData extends ChallengeBase {
 
 
 
+// ─── Puzzle ──────────────────────────────────────────────────────────────────
+
+export interface PuzzleChallengeData extends ChallengeBase {
+  type: 'puzzle';
+  /** URL של התמונה לפירוק לחלקים */
+  imageUrl: string;
+  /** מספר החלקים: 4 (2×2) | 9 (3×3) | 16 (4×4) */
+  pieceCount: 4 | 9 | 16;
+  /** הוראה אופציונלית לשחקנים */
+  instruction?: string;
+  /** תמיד 'solved' — הפאזל מאמת את עצמו */
+  solution: string;
+}
+
 // ─── Union ────────────────────────────────────────────────────────────────────
 
 export type ChallengeData =
   | CipherChallengeData
   | PatternChallengeData
   | OddOneOutChallengeData
-  | TriviaChallengeData;
+  | TriviaChallengeData
+  | PuzzleChallengeData;
 
 // ─── Future Templates (stubs — יתווספו עם ממשק Builder) ──────────────────────
 
