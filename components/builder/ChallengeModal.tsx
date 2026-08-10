@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChallengeData, ChallengeType, CipherChallengeData, CipherWheelsChallengeData, PatternChallengeData, OddOneOutChallengeData, TriviaChallengeData, PuzzleChallengeData, ImagePuzzleChallengeData } from '@/types/challenge';
+import { ChallengeData, ChallengeType, CipherChallengeData, CipherWheelsChallengeData, ClockPuzzleChallengeData, PatternChallengeData, OddOneOutChallengeData, TriviaChallengeData, PuzzleChallengeData, ImagePuzzleChallengeData } from '@/types/challenge';
 import { PUZZLE_TEMPLATES } from '@/types/template';
 import { HEBREW_ALPHABET, encodeWord } from '@/lib/cipherWheels';
 import MediaUpload from './MediaUpload';
@@ -128,6 +128,7 @@ function ChallengeForm({ type, challenge, onChange }: {
 }) {
   if (type === 'cipher') return <CipherForm challenge={challenge as CipherChallengeData} onChange={onChange} />;
   if (type === 'cipherWheels') return <CipherWheelsForm challenge={challenge as CipherWheelsChallengeData} onChange={onChange} />;
+  if (type === 'clockPuzzle') return <ClockPuzzleForm challenge={challenge as ClockPuzzleChallengeData} onChange={onChange} />;
   if (type === 'pattern') return <PatternForm challenge={challenge as PatternChallengeData} onChange={onChange} />;
   if (type === 'oddoneout') return <OddOneOutForm challenge={challenge as OddOneOutChallengeData} onChange={onChange} />;
   if (type === 'trivia') return <TriviaForm challenge={challenge as TriviaChallengeData} onChange={onChange} />;
@@ -325,6 +326,116 @@ function CipherWheelsForm({ challenge, onChange }: { challenge: CipherWheelsChal
         </p>
         <p className="text-[10px] text-[#e5e2e1]/25 text-center">
           זה מה שהשחקנים רואים בגלגלות בתחילת האתגר — הם יסובבו {shift} צעדים {direction === 'forward' ? 'אחורה' : 'קדימה'} כדי לפענח
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Clock Puzzle Form ────────────────────────────────────────────────────────
+
+const CLOCK_PUZZLE_DEFAULT_INSTRUCTION = 'כוונו את מחוגי השעון לפי הרמז';
+const CLOCK_HOURS = Array.from({ length: 12 }, (_, i) => i + 1);
+
+function clockPreviewAngle(hour: number, minute: number, snapMinutes: number) {
+  const hourIdx = hour % 12;
+  const minuteIdx = Math.round(minute / snapMinutes) % (60 / snapMinutes);
+  return { hourAngle: hourIdx * 30, minuteAngle: minuteIdx * 30 };
+}
+
+function ClockPuzzlePreview({ hour, minute, snapMinutes }: { hour: number; minute: number; snapMinutes: number }) {
+  const { hourAngle, minuteAngle } = clockPreviewAngle(hour, minute, snapMinutes);
+  return (
+    <div className="relative w-24 h-24 shrink-0" aria-hidden="true">
+      <img src="/images/clock-face.png" alt="" className="absolute inset-0 w-full h-full object-contain" />
+      <div
+        style={{
+          position: 'absolute', left: '50%', top: '50%',
+          height: '32%', width: 'auto', aspectRatio: '87 / 345',
+          transformOrigin: '50% 91.45%',
+          transform: `translate(-50%, -91.45%) rotate(${hourAngle}deg)`,
+        }}
+      >
+        <img src="/images/clock-hour-hand.png" alt="" className="w-full h-full" />
+      </div>
+      <div
+        style={{
+          position: 'absolute', left: '50%', top: '50%',
+          height: '46%', width: 'auto', aspectRatio: '92 / 499',
+          transformOrigin: '50% 94.89%',
+          transform: `translate(-50%, -94.89%) rotate(${minuteAngle}deg)`,
+        }}
+      >
+        <img src="/images/clock-minute-hand.png" alt="" className="w-full h-full" />
+      </div>
+    </div>
+  );
+}
+
+function ClockPuzzleForm({ challenge, onChange }: { challenge: ClockPuzzleChallengeData; onChange: (c: ChallengeData) => void }) {
+  const snapMinutes = challenge.snapMinutes ?? 5;
+  const minuteOptions = Array.from({ length: 60 / snapMinutes }, (_, i) => i * snapMinutes);
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <label className={lbl}>הוראה לשחקנים</label>
+        <input
+          className={inp}
+          placeholder={CLOCK_PUZZLE_DEFAULT_INSTRUCTION}
+          value={challenge.instruction ?? ''}
+          onChange={e => onChange({ ...challenge, instruction: e.target.value })}
+        />
+      </div>
+
+      <div>
+        <label className={lbl}>רמז — כיצד לחשב את השעה הנכונה</label>
+        <textarea
+          className={inp + ' resize-none'}
+          rows={3}
+          placeholder="המחוג הקצר: ... המחוג הארוך: ..."
+          value={challenge.clue ?? ''}
+          onChange={e => onChange({ ...challenge, clue: e.target.value })}
+        />
+      </div>
+
+      <div className="flex items-center gap-4">
+        <div className="flex-1 space-y-3">
+          <div>
+            <label className={lbl}>שעת פתרון</label>
+            <select
+              className={inp}
+              value={challenge.targetHour}
+              onChange={e => onChange({ ...challenge, targetHour: Number(e.target.value) })}
+            >
+              {CLOCK_HOURS.map(h => <option key={h} value={h}>{h}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className={lbl}>דקת פתרון</label>
+            <select
+              className={inp}
+              value={challenge.targetMinute}
+              onChange={e => onChange({ ...challenge, targetMinute: Number(e.target.value) })}
+            >
+              {minuteOptions.map(m => <option key={m} value={m}>{String(m).padStart(2, '0')}</option>)}
+            </select>
+          </div>
+        </div>
+        <ClockPuzzlePreview hour={challenge.targetHour} minute={challenge.targetMinute} snapMinutes={snapMinutes} />
+      </div>
+
+      <div>
+        <label className={lbl}>מילת מפתח שנחשפת עם הפתרון</label>
+        <input
+          className={inp + ' text-center font-mono text-lg tracking-widest'}
+          placeholder="הארי"
+          dir="rtl"
+          value={challenge.solution}
+          onChange={e => onChange({ ...challenge, solution: e.target.value })}
+        />
+        <p className="text-[10px] text-[#e5e2e1]/25 mt-2">
+          זו גם התשובה שהשחקנים יקלידו בשדה התשובה הרגיל אחרי שיכוונו את השעון נכון
         </p>
       </div>
     </div>
@@ -696,6 +807,16 @@ function blankChallenge(type: ChallengeType): ChallengeData {
         enableTickSound: true,
         solution: '',
       };
+    case 'clockPuzzle':
+      return {
+        type: 'clockPuzzle',
+        instruction: CLOCK_PUZZLE_DEFAULT_INSTRUCTION,
+        clue: '',
+        targetHour: 12,
+        targetMinute: 0,
+        snapMinutes: 5,
+        solution: '',
+      };
     case 'pattern':
       return { type: 'pattern', items: [], blankCount: 0, solution: '' };
     case 'oddoneout':
@@ -725,6 +846,7 @@ function templateName(type: ChallengeType | null): string {
   const map: Record<string, string> = {
     cipher: 'צופן סמלים',
     cipherWheels: 'גלגלי צופן',
+    clockPuzzle: 'שעון מסתורי',
     pattern: 'זיהוי דפוס',
     oddoneout: 'מי לא שייך',
     trivia: 'שאלת ידע',
@@ -738,6 +860,7 @@ function isValid(c: ChallengeData): boolean {
   if (!c.solution) return false;
   if (c.type === 'cipher') return c.key.length > 0 && c.encodedMessage.length > 0;
   if (c.type === 'cipherWheels') return c.initialValues.length > 0;
+  if (c.type === 'clockPuzzle') return c.solution.trim().length > 0;
   if (c.type === 'pattern') return c.items.length > 0;
   if (c.type === 'oddoneout') return c.items.some(i => i.isOdd);
   if (c.type === 'trivia') return c.question.length > 0 && c.options.some(o => o.isCorrect);

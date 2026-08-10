@@ -200,6 +200,6 @@ function DraggableStationRow({ station, index, totalCount, isActive, onClick, on
 }
 
 function challengeLabel(type: string) {
-  const map: Record<string, string> = { cipher: 'צופן', cipherWheels: 'גלגלי צופן', pattern: 'דפוס', oddoneout: 'מי לא שייך', trivia: 'שאלת ידע', puzzle: 'פאזל תמונה', imagePuzzle: 'פאזל תמונה מוסתרת' };
+  const map: Record<string, string> = { cipher: 'צופן', cipherWheels: 'גלגלי צופן', clockPuzzle: 'שעון מסתורי', pattern: 'דפוס', oddoneout: 'מי לא שייך', trivia: 'שאלת ידע', puzzle: 'פאזל תמונה', imagePuzzle: 'פאזל תמונה מוסתרת' };
   return map[type] ?? type;
 }

@@ -223,6 +223,12 @@ button:disabled {
   }
 }
 
+@keyframes clockGlow {
+  0% { filter: drop-shadow(0 0 0 rgba(233, 199, 120, 0)); }
+  40% { filter: drop-shadow(0 0 26px rgba(233, 199, 120, 0.9)); }
+  100% { filter: drop-shadow(0 0 10px rgba(233, 199, 120, 0.35)); }
+}
+
 .anim-fade-up   { animation: fadeUp  0.55s ease-out both; }
 .anim-fade-in   { animation: fadeIn  0.6s  ease-out both; }
 .anim-scale-in  { animation: scaleIn 0.5s  cubic-bezier(0.34,1.56,0.64,1) both; }
@@ -232,6 +238,7 @@ button:disabled {
 .anim-success-title { animation: successTitlePop 0.46s cubic-bezier(0.2, 0.85, 0.25, 1.16) both; }
 .anim-success-chip { animation: successChipRise 0.42s ease-out both; }
 .anim-success-score-finish { animation: successScorePulse 0.42s ease-out 1; }
+.anim-clock-glow { animation: clockGlow 1.4s ease-out; }
 .anim-success-cta-enter { animation: successButtonEnter 0.48s ease-out both; }
 .anim-success-reward-glow { animation: successRewardGlow 2.3s ease-in-out infinite; }
 .library-book-hero {

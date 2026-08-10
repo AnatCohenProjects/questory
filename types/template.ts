@@ -103,6 +103,21 @@ export const PUZZLE_TEMPLATES: PuzzleTemplate[] = [
     suitableObjects: ['ספר', 'תיבת אוצר', 'שער עיר עתיקה', 'ארכיון'],
   },
   {
+    templateId: 'clockPuzzle',
+    name: 'שעון מסתורי',
+    description: 'שחקנים מכוונים את מחוגי שעון עתיק לפי רמז כדי לחשוף מילת מפתח',
+    thinkingType: 'encoding',
+    inputType: 'in_app_visual',
+    challengeType: 'clockPuzzle',
+    questionPrompts: [
+      'מה קובע את השעה? מה קובע את הדקות?',
+      'איזה מידע ניתן למצוא פיזית על הספר או במקום?',
+      'מה מילת המפתח שנחשפת?',
+    ],
+    difficultyLevels: ['easy', 'medium'],
+    suitableObjects: ['ספר', 'מגדל שעון', 'ספרייה', 'חדר בריחה'],
+  },
+  {
     templateId: 'oddoneout',
     name: 'מי לא שייך',
     description: 'שחקנים מזהים חריגה בקבוצת פריטים',

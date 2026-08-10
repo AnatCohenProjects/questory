@@ -214,18 +214,24 @@ export default function BuilderPage() {
     }
   };
 
+  const confirmOverwrite = () =>
+    window.confirm('פעולה זו תחליף את הטיוטה הנוכחית שלך ואי אפשר יהיה לשחזר אותה. להמשיך?');
+
   const handleLoadZichronDraft = () => {
+    if (!confirmOverwrite()) return;
     setDraft(zichronYaakovDraft);
     setActive({ type: 'station', id: 0 });
   };
 
   const handleLoadLibraryDraft = () => {
+    if (!confirmOverwrite()) return;
     setDraft(libraryDraft);
     setActive({ type: 'station', id: 0 });
   };
 
 
   const handleNewDraft = () => {
+    if (!confirmOverwrite()) return;
     localStorage.removeItem('questory_builder_draft');
     setStorageError(null);
     setDraft(createEmptyDraft());
@@ -233,6 +239,7 @@ export default function BuilderPage() {
   };
 
   const handleLoadCustomGame = async () => {
+    if (!confirmOverwrite()) return;
     try {
       const text = await navigator.clipboard.readText();
       const game = JSON.parse(text);

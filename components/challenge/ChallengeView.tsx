@@ -3,6 +3,7 @@
 import { ChallengeData } from '@/types/challenge';
 import CipherChallenge from './CipherChallenge';
 import CipherWheelsChallenge from './CipherWheelsChallenge';
+import ClockPuzzleChallenge from './ClockPuzzleChallenge';
 import PatternChallenge from './PatternChallenge';
 import OddOneOutChallenge from './OddOneOutChallenge';
 import TriviaChallenge from './TriviaChallenge';
@@ -26,6 +27,8 @@ export default function ChallengeView({ challenge, onCodeChange }: ChallengeView
       return <CipherChallenge challenge={challenge} />;
     case 'cipherWheels':
       return <CipherWheelsChallenge challenge={challenge} />;
+    case 'clockPuzzle':
+      return <ClockPuzzleChallenge challenge={challenge} />;
     case 'pattern':
       return <PatternChallenge challenge={challenge} onCodeChange={onCodeChange} />;
     case 'oddoneout':

@@ -15,6 +15,7 @@
 export type ChallengeType =
   | 'cipher'        // פענוח צופן — סמלים → ספרות  (escape room)
   | 'cipherWheels'  // גלגלי צופן — סיבוב גלגלות אותיות לפענוח מילה  (escape room)
+  | 'clockPuzzle'   // שעון מסתורי — כיוון מחוגים לשעה נכונה לחשיפת מילת מפתח  (escape room)
   | 'pattern'     // השלמת סדרה — מספרים/אותיות עם חסרים  (escape room)
   | 'oddoneout'   // מי לא שייך — בחירה מגריד  (escape room)
   | 'trivia'      // שאלת ידע — בחירה מרובה  (universal)
@@ -127,11 +128,30 @@ export interface ImagePuzzleChallengeData extends ChallengeBase {
   solution: string;
 }
 
+// ─── Clock Puzzle ───────────────────────────────────────────────────────────
+
+export interface ClockPuzzleChallengeData extends ChallengeBase {
+  type: 'clockPuzzle';
+  /** הוראה קצרה לשחקנים — אופציונלי */
+  instruction?: string;
+  /** רמז שמסביר איך לחשב את השעה הנכונה — אופציונלי */
+  clue?: string;
+  /** שעת היעד (1–12) */
+  targetHour: number;
+  /** דקת היעד (0–59, בהתאם ל-snapMinutes) */
+  targetMinute: number;
+  /** קפיצת הדקות בכל "קליק" של מחוג הדקות — ברירת מחדל 5 */
+  snapMinutes?: number;
+  /** מילת המפתח שנחשפת עם הפתרון הנכון — גם היא התשובה שתאומת בשדה התשובה הרגיל */
+  solution: string;
+}
+
 // ─── Union ────────────────────────────────────────────────────────────────────
 
 export type ChallengeData =
   | CipherChallengeData
   | CipherWheelsChallengeData
+  | ClockPuzzleChallengeData
   | PatternChallengeData
   | OddOneOutChallengeData
   | TriviaChallengeData

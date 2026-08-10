@@ -237,7 +237,7 @@ export default function StationView({ station, game, session, onComplete, onBack
                   </p>
                 </div>
 
-                {(!station.challenge || station.challenge.type === 'cipher' || station.challenge.type === 'cipherWheels') && (
+                {(!station.challenge || station.challenge.type === 'cipher' || station.challenge.type === 'cipherWheels' || station.challenge.type === 'clockPuzzle') && (
                   <input
                     ref={answerInputRef}
                     type="text"
