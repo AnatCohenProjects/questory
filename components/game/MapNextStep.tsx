@@ -21,6 +21,8 @@ interface MapNextStepProps {
   triggerType: 'code' | 'qr' | 'gps';
   gameType?: GameType;
   transitionRiddle?: TransitionRiddleData;
+  /** כשמופעל, מדלגים על דרישת הקלדת התשובה (חידה א׳ עצמה — האתגר של התחנה — משמשת כעת לזיהוי הספר) */
+  skipRiddle?: boolean;
   onReady: () => void;
   onBack?: () => void;
 }
@@ -37,7 +39,7 @@ function getLabels(gameType?: GameType) {
     nextLabel: isLibrary ? 'הספר הבא' : 'התחנה הבאה',
     arrivedCta: 'הגעתי ליעד',
     firstFallback: isLibrary
-      ? 'המשחק מתחיל עכשיו. מצאו את הספר הראשון, הזינו את הקוד, ופתחו את המשימה הראשונה.'
+      ? 'המשחק מתחיל עכשיו. פתרו את האתגר, מצאו את הספר הראשון, ופתחו את המשימה הראשונה.'
       : 'המשחק מתחיל עכשיו. מצאו את התחנה הראשונה, הזינו את הקוד, ופתחו את המשימה הראשונה.',
     middleFallback: isLibrary
       ? 'אתם מתקדמים יפה. הספר הבא כבר מחכה. מצאו אותו, הזינו את הקוד, ופתחו את המשימה הבאה.'
@@ -57,6 +59,7 @@ export default function MapNextStep({
   triggerType,
   gameType,
   transitionRiddle,
+  skipRiddle,
   onReady,
   onBack,
 }: MapNextStepProps) {
@@ -367,7 +370,7 @@ export default function MapNextStep({
               </>
             )}
 
-            {!transitionRiddle && gameType === 'library' && !riddleSolved && (
+            {!transitionRiddle && gameType === 'library' && !riddleSolved && !skipRiddle && (
               <>
                 {/* First station: navigationHint as riddle with answer input */}
                 <div
@@ -461,9 +464,9 @@ export default function MapNextStep({
               </>
             )}
 
-            {!transitionRiddle && gameType !== 'library' && (
+            {!transitionRiddle && (gameType !== 'library' || skipRiddle) && (
               <>
-                {/* Urban: regular navigation hint + arrived button */}
+                {/* Urban, or library with the pre-station riddle skipped: hint + continue button */}
                 <div
                   className="bg-[#131313] border border-[#00FBFB]/15 rounded-2xl p-5 space-y-3 anim-fade-up"
                   style={{ animationDelay: '150ms' }}
@@ -503,7 +506,7 @@ export default function MapNextStep({
                     style={{ boxShadow: '0 0 20px rgba(0,251,251,0.07)' }}
                   >
                     <div className="absolute inset-0 bg-gradient-to-r from-[#00FBFB]/0 via-[#00FBFB]/8 to-[#00FBFB]/0" style={{ animation: 'shimmer 2.5s ease-in-out infinite' }} />
-                    <span className="relative z-10">{labels.arrivedCta}</span>
+                    <span className="relative z-10">{skipRiddle ? 'המשיכו' : labels.arrivedCta}</span>
                   </button>
                 </div>
               </>

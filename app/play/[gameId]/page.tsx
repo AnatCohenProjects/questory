@@ -23,6 +23,9 @@ type GamePhase =
   | 'trigger'
   | 'arrival'
   | 'station'
+  | 'own_book_reveal'
+  | 'own_arrival'
+  | 'content_riddle'
   | 'success'
   | 'transition_riddle'
   | 'book_reveal'
@@ -212,6 +215,20 @@ export default function GamePage({ params }: { params: Promise<{ gameId: string 
     });
   };
 
+  // Riddle A (the station's own primary challenge) just finished. For library games
+  // whose station has its own `book`, route through the book-reveal → arrival → content-riddle
+  // sequence before finally calling handleStationComplete; everything else (urban, or a
+  // library station with no `book`) finishes immediately exactly as before.
+  const handlePrimaryChallengeComplete = (answer: string, skipped?: boolean) => {
+    if (!game || !session) return;
+    const station = game.stations[session.currentStationId];
+    if (!skipped && game.gameType === 'library' && station?.book) {
+      navigateTo({ phase: 'own_book_reveal', session, lastAnswer: answer });
+      return;
+    }
+    handleStationComplete(answer, skipped);
+  };
+
   const handleSuccessContinue = () => {
     if (!game || !session) return;
 
@@ -283,7 +300,8 @@ export default function GamePage({ params }: { params: Promise<{ gameId: string 
         triggerType={currentStation?.triggerType ?? 'code'}
         gameType={game.gameType}
         transitionRiddle={mapTransitionRiddle}
-        onReady={() => navigateTo({ phase: game.gameType === 'library' ? 'arrival' : 'trigger', session, lastAnswer })}
+        skipRiddle={game.gameType === 'library' && !mapTransitionRiddle}
+        onReady={() => navigateTo({ phase: game.gameType === 'library' ? 'station' : 'trigger', session, lastAnswer })}
         onBack={historyIndex > 0 ? goBack : undefined}
       />
     );
@@ -321,11 +339,70 @@ export default function GamePage({ params }: { params: Promise<{ gameId: string 
     );
   }
 
-  // 6. Station (puzzle)
+  // 6. Station (riddle A — the station's own primary challenge)
   if (phase === 'station') {
     return (
       <StationView
         station={currentStation}
+        game={game}
+        session={session}
+        onComplete={handlePrimaryChallengeComplete}
+        onBack={historyIndex > 0 ? goBack : undefined}
+        stationNumber={session.currentStationId + 1}
+      />
+    );
+  }
+
+  // 6a. Own Book Reveal (library — after solving riddle A, reveal THIS station's own book)
+  if (phase === 'own_book_reveal') {
+    const book = currentStation?.book;
+    if (!book) return null;
+    return (
+      <BookRevealView
+        targetBook={book}
+        gameType={game.gameType}
+        onContinue={() => navigateTo({ phase: 'own_arrival', session, lastAnswer })}
+        onBack={historyIndex > 0 ? goBack : undefined}
+      />
+    );
+  }
+
+  // 6b. Own Arrival (library — confirm the player physically found the book)
+  if (phase === 'own_arrival') {
+    const book = currentStation?.book;
+    return (
+      <LocationArrival
+        stationNumber={session.currentStationId + 1}
+        gameType={game.gameType}
+        bookTitle={book?.title}
+        bookAuthor={book?.author}
+        onContinue={() => {
+          if (currentStation?.contentRiddle) {
+            navigateTo({ phase: 'content_riddle', session, lastAnswer });
+          } else {
+            handleStationComplete(lastAnswer, false);
+          }
+        }}
+        onBack={historyIndex > 0 ? goBack : undefined}
+      />
+    );
+  }
+
+  // 6c. Content Riddle (riddle B — about the book's content, once physically found)
+  if (phase === 'content_riddle') {
+    const cr = currentStation?.contentRiddle;
+    if (!cr) return null;
+    const contentStation = {
+      ...currentStation,
+      task: cr.task,
+      taskMedia: cr.taskMedia,
+      challenge: cr.challenge,
+      answer: cr.answer,
+      narrative: '',
+    };
+    return (
+      <StationView
+        station={contentStation}
         game={game}
         session={session}
         onComplete={handleStationComplete}

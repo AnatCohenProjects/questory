@@ -81,11 +81,13 @@ export default function StationView({ station, game, session, onComplete, onBack
   const isEmptyAnswerError = error === EMPTY_ANSWER_MESSAGE;
   const isLibrary = game.gameType === 'library';
   const isPuzzle = station.challenge?.type === 'puzzle';
+  const isImagePuzzle = station.challenge?.type === 'imagePuzzle';
+  const isSelfSolvingPuzzle = isPuzzle || isImagePuzzle;
 
   const puzzleCompleteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    if (isPuzzle && answer === 'solved') {
+    if (isSelfSolvingPuzzle && answer === 'solved') {
       console.log('[Station] puzzle answer=solved — starting 3s timer');
       const t = setTimeout(() => {
         console.log('[Station] timer fired — calling onComplete');
@@ -94,7 +96,7 @@ export default function StationView({ station, game, session, onComplete, onBack
       puzzleCompleteTimerRef.current = t;
       return () => clearTimeout(t);
     }
-  }, [isPuzzle, answer]);
+  }, [isSelfSolvingPuzzle, answer]);
   const answerHelper = isLibrary ? 'הקלידו את התשובה שמצאתם בספר.' : 'הקלידו את התשובה.';
   const answerPrompt = isLibrary ? null : 'כתבו את הפתרון שמצאתם';
   const answerPlaceholder = isLibrary ? 'כתבו כאן את התשובה' : 'הקלידו כאן את התשובה';
@@ -162,7 +164,13 @@ export default function StationView({ station, game, session, onComplete, onBack
           />
         </header>
 
-        <div className={`flex-1 grid grid-cols-1 px-6 lg:px-8 pt-8 lg:pt-10 pb-8 lg:pb-12 gap-6 overflow-y-auto mx-auto w-full ${station.challenge ? 'max-w-md lg:max-w-xl' : 'lg:gap-x-8 lg:gap-y-4 max-w-md lg:max-w-6xl lg:grid-cols-[minmax(0,0.95fr)_minmax(360px,0.78fr)] lg:items-start'}`}>
+        <div className={`flex-1 grid grid-cols-1 px-6 lg:px-8 pt-8 lg:pt-10 pb-8 lg:pb-12 gap-6 overflow-y-auto mx-auto w-full ${
+          isImagePuzzle
+            ? 'max-w-xl md:max-w-2xl lg:max-w-3xl xl:max-w-4xl'
+            : station.challenge
+              ? 'max-w-md lg:max-w-xl'
+              : 'lg:gap-x-8 lg:gap-y-4 max-w-md lg:max-w-6xl lg:grid-cols-[minmax(0,0.95fr)_minmax(360px,0.78fr)] lg:items-start'
+        }`}>
           <div className={`space-y-2 ${station.challenge ? '' : 'lg:col-start-1 lg:row-start-1 lg:max-w-xl'}`}>
             <p className="text-[10px] uppercase tracking-[0.35em] text-[#00FBFB]/70">
               תחנה {stationNumber.toString().padStart(2, '0')} | {game.title}
@@ -189,25 +197,35 @@ export default function StationView({ station, game, session, onComplete, onBack
             </div>
           )}
 
-          {station.challenge && (
-            <div className="space-y-5">
-              <div className={`rounded-2xl ${isLibrary ? 'library-panel border' : 'bg-[#131313] border border-[#3a4a49]/50'}`}>
-                <div className="p-5">
-                  <ChallengeView
-                    challenge={station.challenge}
-                    onCodeChange={(code: string) => {
-                      console.log('[Station] onCodeChange received:', code);
-                      setAnswer(code);
-                      setError('');
-                    }}
-                  />
+          {station.challenge && (() => {
+            const challengeViewEl = (
+              <ChallengeView
+                challenge={station.challenge}
+                onCodeChange={(code: string) => {
+                  console.log('[Station] onCodeChange received:', code);
+                  setAnswer(code);
+                  setError('');
+                }}
+              />
+            );
+            if (isImagePuzzle) {
+              // imagePuzzle brings its own full-width visual surface — skip the shared bordered card
+              // so it isn't nested inside an extra box on top of its own panel.
+              return <div className="space-y-5">{challengeViewEl}</div>;
+            }
+            return (
+              <div className="space-y-5">
+                <div className={`rounded-2xl ${isLibrary ? 'library-panel border' : 'bg-[#131313] border border-[#3a4a49]/50'}`}>
+                  <div className="p-5">
+                    {challengeViewEl}
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            );
+          })()}
 
           <div className={`space-y-4 ${station.challenge ? '' : 'lg:col-start-2 lg:row-start-2'}`}>
-            {!isPuzzle && (
+            {!isSelfSolvingPuzzle && (
               <div className={`rounded-2xl p-5 space-y-4 ${isLibrary ? 'library-panel border' : 'bg-[#101616] border border-[#00FBFB]/15'}`}>
                 <div className="space-y-2">
                   <p className="font-headline text-base font-bold text-white">הפתרון שלכם</p>
@@ -303,10 +321,10 @@ export default function StationView({ station, game, session, onComplete, onBack
               {!showReveal ? (
                 <div className="flex gap-3">
                   <button
-                    onClick={() => { if (isPuzzle) { onComplete('solved', false); } else { setShowReveal(true); } }}
+                    onClick={() => { if (isSelfSolvingPuzzle) { onComplete('solved', false); } else { setShowReveal(true); } }}
                     className="flex-1 text-[#e5e2e1]/50 text-sm py-3 rounded-xl border border-[#3a4a49]/40 active:scale-95 transition-transform"
                   >
-                    {isPuzzle ? 'המשך ממילא' : 'גלה תשובה'}
+                    {isSelfSolvingPuzzle ? 'המשך ממילא' : 'גלה תשובה'}
                   </button>
                   <button
                     onClick={() => onComplete('', true)}

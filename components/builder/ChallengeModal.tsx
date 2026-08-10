@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChallengeData, ChallengeType, CipherChallengeData, PatternChallengeData, OddOneOutChallengeData, TriviaChallengeData, PuzzleChallengeData } from '@/types/challenge';
+import { ChallengeData, ChallengeType, CipherChallengeData, PatternChallengeData, OddOneOutChallengeData, TriviaChallengeData, PuzzleChallengeData, ImagePuzzleChallengeData } from '@/types/challenge';
 import { PUZZLE_TEMPLATES } from '@/types/template';
 import MediaUpload from './MediaUpload';
 
@@ -130,6 +130,7 @@ function ChallengeForm({ type, challenge, onChange }: {
   if (type === 'oddoneout') return <OddOneOutForm challenge={challenge as OddOneOutChallengeData} onChange={onChange} />;
   if (type === 'trivia') return <TriviaForm challenge={challenge as TriviaChallengeData} onChange={onChange} />;
   if (type === 'puzzle') return <PuzzleForm challenge={challenge as PuzzleChallengeData} onChange={onChange} />;
+  if (type === 'imagePuzzle') return <ImagePuzzleForm challenge={challenge as ImagePuzzleChallengeData} onChange={onChange} />;
   return null;
 }
 
@@ -495,6 +496,77 @@ function PuzzleForm({ challenge, onChange }: { challenge: PuzzleChallengeData; o
   );
 }
 
+// ─── Image Puzzle Form ────────────────────────────────────────────────────────
+
+const IMAGE_PUZZLE_DEFAULT_INSTRUCTION = 'הרכיבו את חלקי התמונה כדי לגלות מה מסתתר בה';
+
+const IMAGE_PUZZLE_PRESETS = [
+  { label: 'קל', pieces: 6 as const },
+  { label: 'בינוני', pieces: 9 as const },
+  { label: 'קשה', pieces: 12 as const },
+];
+
+function ImagePuzzleForm({ challenge, onChange }: { challenge: ImagePuzzleChallengeData; onChange: (c: ChallengeData) => void }) {
+  return (
+    <div className="space-y-5">
+      <div>
+        <label className={lbl}>הוראה לשחקנים</label>
+        <input
+          className={inp}
+          placeholder={IMAGE_PUZZLE_DEFAULT_INSTRUCTION}
+          value={challenge.instruction ?? ''}
+          onChange={e => onChange({ ...challenge, instruction: e.target.value })}
+        />
+      </div>
+
+      <div>
+        <label className={lbl}>תמונת פאזל</label>
+        <MediaUpload
+          currentUrl={challenge.imageUrl}
+          currentType="image"
+          onMediaChange={(url) => onChange({ ...challenge, imageUrl: url, solution: url ? 'solved' : '' })}
+          label="תמונה"
+          accept={['image']}
+        />
+        <p className="text-[10px] text-[#e5e2e1]/25 mt-2">
+          התמונה המלאה מוצגת כאן לצורך בדיקה בלבד. השחקנים לא יראו אותה לפני שיפתרו את הפאזל.
+        </p>
+      </div>
+
+      <div>
+        <label className={lbl}>רמת קושי</label>
+        <div className="flex gap-2">
+          {IMAGE_PUZZLE_PRESETS.map(p => (
+            <button
+              key={p.pieces}
+              type="button"
+              onClick={() => onChange({ ...challenge, pieceCount: p.pieces })}
+              className={[
+                'flex-1 py-3 rounded-xl text-sm font-semibold border transition-colors',
+                challenge.pieceCount === p.pieces
+                  ? 'border-[#00FBFB]/60 bg-[#1a2a2a] text-[#00FBFB]'
+                  : 'border-[#3a4a49]/40 bg-[#0a0a0a] text-[#e5e2e1]/50 hover:border-[#3a4a49]/70',
+              ].join(' ')}
+            >
+              <span className="block">{p.label}</span>
+              <span className="text-[10px] opacity-60">{p.pieces} חלקים</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {challenge.imageUrl && (
+        <div className="rounded-xl overflow-hidden border border-[#3a4a49]/30 bg-[#0a0a0a]">
+          <img src={challenge.imageUrl} alt="" className="w-full max-h-40 object-contain" />
+          <p className="text-[10px] text-center text-[#e5e2e1]/30 py-2">
+            תצוגה מקדימה ליוצר, התמונה תפוצל ל-{challenge.pieceCount} חלקים
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function blankChallenge(type: ChallengeType): ChallengeData {
@@ -517,6 +589,10 @@ function blankChallenge(type: ChallengeType): ChallengeData {
       ], solution: '' };
     case 'puzzle':
       return { type: 'puzzle', imageUrl: '', pieceCount: 9, instruction: '', solution: '' };
+    case 'imagePuzzle':
+      // 12 defaults to a rows×cols grid that adapts to the image's aspect ratio (3x4/4x3),
+      // unlike 9 which is always a square 3x3 — better fit for non-square covers.
+      return { type: 'imagePuzzle', imageUrl: '', pieceCount: 12, instruction: IMAGE_PUZZLE_DEFAULT_INSTRUCTION, solution: '' };
     default:
       return { type: 'cipher', key: [], encodedMessage: [], solution: '' };
   }
@@ -529,6 +605,7 @@ function templateName(type: ChallengeType | null): string {
     oddoneout: 'מי לא שייך',
     trivia: 'שאלת ידע',
     puzzle: 'פאזל תמונה',
+    imagePuzzle: 'פאזל תמונה מוסתרת',
   };
   return type ? (map[type] ?? type) : 'אתגר';
 }
@@ -540,5 +617,6 @@ function isValid(c: ChallengeData): boolean {
   if (c.type === 'oddoneout') return c.items.some(i => i.isOdd);
   if (c.type === 'trivia') return c.question.length > 0 && c.options.some(o => o.isCorrect);
   if (c.type === 'puzzle') return c.imageUrl.length > 0;
+  if (c.type === 'imagePuzzle') return c.imageUrl.length > 0;
   return true;
 }

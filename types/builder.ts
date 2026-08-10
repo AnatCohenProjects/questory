@@ -85,6 +85,12 @@ export interface StationDraft {
   hints: [string, string, string];
   answer: string;
   challenge?: ChallengeData;
+  contentRiddle?: {
+    task: string;
+    taskMedia?: { type: 'image' | 'video' | 'audio'; url: string; caption?: string };
+    challenge?: ChallengeData;
+    answer: string;
+  };
   media: MediaItem[];
   transitionRiddle?: TransitionRiddle;
 }
@@ -231,6 +237,7 @@ export function draftToGame(draft: GameDraft): Game {
       hints: s.hints,
       answer: s.answer,
       challenge: s.challenge,
+      contentRiddle: s.contentRiddle,
       transitionRiddle: s.transitionRiddle ? {
         enabled: s.transitionRiddle.enabled,
         prompt: s.transitionRiddle.prompt,

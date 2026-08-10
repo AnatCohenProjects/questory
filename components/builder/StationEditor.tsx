@@ -27,10 +27,13 @@ const challengeTypeLabel: Record<string, string> = {
   pattern: 'זיהוי דפוס',
   oddoneout: 'מי לא שייך',
   trivia: 'שאלת ידע',
+  puzzle: 'פאזל תמונה',
+  imagePuzzle: 'פאזל תמונה מוסתרת',
 };
 
 export default function StationEditor({ station, stationNumber, totalStations, gameDataSource, onUpdate, onRemove }: StationEditorProps) {
   const [showChallengeModal, setShowChallengeModal] = useState(false);
+  const [showContentChallengeModal, setShowContentChallengeModal] = useState(false);
   const [isGeneratingAI, setIsGeneratingAI] = useState(false);
 
   const updateHint = (i: number, val: string) => {
@@ -42,6 +45,23 @@ export default function StationEditor({ station, stationNumber, totalStations, g
   const handleChallengeSave = (challenge: ChallengeData) => {
     onUpdate({ challenge, answer: challenge.solution });
     setShowChallengeModal(false);
+  };
+
+  // Content riddle helpers (second riddle — about the book's content, once physically found)
+  const updateContentRiddle = (patch: Partial<NonNullable<StationDraft['contentRiddle']>>) => {
+    onUpdate({
+      contentRiddle: {
+        task: '',
+        answer: '',
+        ...station.contentRiddle,
+        ...patch,
+      },
+    });
+  };
+
+  const handleContentChallengeSave = (challenge: ChallengeData) => {
+    updateContentRiddle({ challenge, answer: challenge.solution });
+    setShowContentChallengeModal(false);
   };
 
   // Media helpers
@@ -212,6 +232,41 @@ export default function StationEditor({ station, stationNumber, totalStations, g
         </div>
       </div>
 
+      {/* Book / destination details — shown to players on the book-reveal and arrival screens */}
+      <div className={card}>
+        <p className="text-[10px] uppercase tracking-[0.2em] text-[#00FBFB]/60">פרטי הספר</p>
+        <p className="text-[10px] text-[#e5e2e1]/25">
+          מוצג לשחקנים במסכי &quot;הספר נחשף&quot; ו&quot;הגעתם לספר&quot;
+        </p>
+        <div>
+          <label className={lbl}>שם הספר</label>
+          <input
+            className={inp}
+            placeholder="הנסיך הקטן"
+            value={station.book?.title ?? ''}
+            onChange={e => onUpdate({ book: { ...station.book, title: e.target.value } })}
+          />
+        </div>
+        <div>
+          <label className={lbl}>מחבר — אופציונלי</label>
+          <input
+            className={inp}
+            placeholder="אנטואן דה סנט-אכזופרי"
+            value={station.book?.author ?? ''}
+            onChange={e => onUpdate({ book: { title: station.book?.title ?? '', ...station.book, author: e.target.value } })}
+          />
+        </div>
+        <div>
+          <label className={lbl}>מיקום / מדף — אופציונלי</label>
+          <input
+            className={inp}
+            placeholder="ספרות ילדים קלאסית, לפי שם מחבר: סנט-אכזופרי"
+            value={station.book?.location ?? ''}
+            onChange={e => onUpdate({ book: { title: station.book?.title ?? '', ...station.book, location: e.target.value } })}
+          />
+        </div>
+      </div>
+
       {/* Step media */}
       <div className={card}>
         <div>
@@ -323,6 +378,93 @@ export default function StationEditor({ station, stationNumber, totalStations, g
           </p>
         </div>
       </div>
+
+      {/* Content Riddle — second riddle, about the book's content, shown once the player physically finds it */}
+      <div className={card}>
+        <p className="text-[10px] uppercase tracking-[0.2em] text-[#00FBFB]/60">חידה ב&apos; — תוכן הספר</p>
+        <p className="text-[10px] text-[#e5e2e1]/25">
+          מוצגת לשחקנים אחרי שהם מוצאים את הספר פיזית (אחרי חידה א&apos; ומסך ההגעה)
+        </p>
+
+        <div>
+          <label className={lbl}>הוראה לשחקנים</label>
+          <textarea
+            className={inp + ' resize-none'}
+            rows={3}
+            placeholder="כשהספר בידיכם — ספרו את מספר המילים בשם הספר וכתבו את המספר..."
+            value={station.contentRiddle?.task ?? ''}
+            onChange={e => updateContentRiddle({ task: e.target.value })}
+          />
+        </div>
+
+        <div>
+          <label className={lbl}>מדיה — אופציונלי</label>
+          <MediaUpload
+            currentUrl={station.contentRiddle?.taskMedia?.url}
+            currentType={station.contentRiddle?.taskMedia?.type}
+            onMediaChange={(url, type) => updateContentRiddle({
+              taskMedia: url ? { type, url, caption: station.contentRiddle?.taskMedia?.caption || '' } : undefined,
+            })}
+            label="תמונה / וידאו / אודיו"
+          />
+        </div>
+
+        <div>
+          <label className={lbl}>אתגר אינטראקטיבי — אופציונלי</label>
+          {station.contentRiddle?.challenge ? (
+            <div className="flex items-center justify-between bg-[#0a0a0a] border border-[#3a4a49]/40 rounded-xl px-4 py-3">
+              <div>
+                <p className="text-sm text-[#e5e2e1]/80 font-semibold">
+                  {challengeTypeLabel[station.contentRiddle.challenge.type] ?? station.contentRiddle.challenge.type}
+                </p>
+                <p className="text-[10px] text-[#e5e2e1]/30 mt-0.5">פתרון: {station.contentRiddle.challenge.solution}</p>
+              </div>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowContentChallengeModal(true)}
+                  className="text-[#00FBFB] text-xs px-3 py-1.5 rounded-lg border border-[#00FBFB]/20 hover:border-[#00FBFB]/50 transition-colors"
+                >
+                  ערוך
+                </button>
+                <button
+                  onClick={() => updateContentRiddle({ challenge: undefined })}
+                  className="text-[#e5e2e1]/30 text-xs px-3 py-1.5 rounded-lg border border-[#3a4a49]/30 hover:border-red-500/40 hover:text-red-400 transition-colors"
+                >
+                  הסר
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowContentChallengeModal(true)}
+              className="w-full py-3 rounded-xl border border-dashed border-[#3a4a49]/60 text-[#e5e2e1]/40 text-sm hover:border-[#00FBFB]/30 hover:text-[#00FBFB]/60 transition-colors"
+            >
+              + הוסף אתגר ידני
+            </button>
+          )}
+        </div>
+
+        <div>
+          <label className={lbl}>תשובה נכונה</label>
+          <input
+            className={inp + ' text-lg font-mono tracking-wider'}
+            placeholder="2"
+            value={station.contentRiddle?.answer ?? ''}
+            onChange={e => updateContentRiddle({ answer: e.target.value })}
+          />
+          <p className="text-[10px] text-[#e5e2e1]/25 mt-2">
+            {station.contentRiddle?.challenge ? 'מועתק אוטומטית מהאתגר — ניתן לשנות ידנית' : 'מה השחקנים צריכים להקליד'}
+          </p>
+        </div>
+      </div>
+
+      {showContentChallengeModal && (
+        <ChallengeModal
+          initial={station.contentRiddle?.challenge}
+          onSave={handleContentChallengeSave}
+          onClose={() => setShowContentChallengeModal(false)}
+        />
+      )}
 
       {/* Transition Riddle */}
       <div className={card}>

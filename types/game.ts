@@ -46,6 +46,12 @@ export type Station = {
   hints: [string, string, string];
   answer: string;
   challenge?: ChallengeData;
+  contentRiddle?: {
+    task: string;
+    taskMedia?: StationMedia;
+    challenge?: ChallengeData;
+    answer: string;
+  };
   transitionRiddle?: {
     enabled: boolean;
     prompt: string;

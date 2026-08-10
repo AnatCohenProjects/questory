@@ -132,6 +132,21 @@ export const PUZZLE_TEMPLATES: PuzzleTemplate[] = [
     difficultyLevels: ['easy', 'medium', 'hard'],
     suitableObjects: ['עטיפת ספר', 'תמונה היסטורית', 'מפה', 'פורטרט'],
   },
+  {
+    templateId: 'imagePuzzle',
+    name: 'פאזל תמונה מוסתרת',
+    description: 'שחקנים מרכיבים תמונה חתוכה לחלקים בלי לראות אותה מראש, ומגלים מה מוסתר בה רק אחרי ההרכבה',
+    thinkingType: 'transformation',
+    inputType: 'in_app_visual',
+    challengeType: 'imagePuzzle',
+    questionPrompts: [
+      'איזו תמונה תפוצל לחלקים?',
+      'כמה חלקים, קל (6), בינוני (9) או קשה (12)?',
+      'מה מתגלה לאחר ההרכבה?',
+    ],
+    difficultyLevels: ['easy', 'medium', 'hard'],
+    suitableObjects: ['עטיפת ספר', 'בניין', 'פסל', 'ציור קיר', 'תמונה היסטורית'],
+  },
 ];
 
 /** קבלת Template לפי challengeType */
