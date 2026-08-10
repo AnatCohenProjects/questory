@@ -482,7 +482,9 @@ export default function MapNextStep({
                     </span>
                     <p className="text-[10px] uppercase tracking-[0.25em] text-[#00FBFB]/60">{labels.nextLabel}</p>
                   </div>
-                  <p className="text-[#e5e2e1]/80 text-base leading-relaxed">{displayHint}</p>
+                  {!(gameType === 'library' && skipRiddle) && (
+                    <p className="text-[#e5e2e1]/80 text-base leading-relaxed">{displayHint}</p>
+                  )}
                 </div>
 
                 {triggerType === 'gps' && (

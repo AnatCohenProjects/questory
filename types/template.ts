@@ -88,6 +88,21 @@ export const PUZZLE_TEMPLATES: PuzzleTemplate[] = [
     suitableObjects: ['חזית בניין', 'שלט', 'פסל', 'ריצוף', 'קיר'],
   },
   {
+    templateId: 'cipherWheels',
+    name: 'גלגלי צופן',
+    description: 'שחקנים מסובבים גלגלות אותיות מכניות כדי לפענח מילת מפתח מוצפנת',
+    thinkingType: 'encoding',
+    inputType: 'in_app_visual',
+    challengeType: 'cipherWheels',
+    questionPrompts: [
+      'מהי מילת המפתח המפוענחת?',
+      'כמה צעדים ההזזה?',
+      'לאיזה כיוון הוצפנה המילה?',
+    ],
+    difficultyLevels: ['easy', 'medium'],
+    suitableObjects: ['ספר', 'תיבת אוצר', 'שער עיר עתיקה', 'ארכיון'],
+  },
+  {
     templateId: 'oddoneout',
     name: 'מי לא שייך',
     description: 'שחקנים מזהים חריגה בקבוצת פריטים',

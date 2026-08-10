@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { ChallengeData, ChallengeType, CipherChallengeData, PatternChallengeData, OddOneOutChallengeData, TriviaChallengeData, PuzzleChallengeData, ImagePuzzleChallengeData } from '@/types/challenge';
+import { ChallengeData, ChallengeType, CipherChallengeData, CipherWheelsChallengeData, PatternChallengeData, OddOneOutChallengeData, TriviaChallengeData, PuzzleChallengeData, ImagePuzzleChallengeData } from '@/types/challenge';
 import { PUZZLE_TEMPLATES } from '@/types/template';
+import { HEBREW_ALPHABET, encodeWord } from '@/lib/cipherWheels';
 import MediaUpload from './MediaUpload';
 
 interface ChallengeModalProps {
@@ -126,6 +127,7 @@ function ChallengeForm({ type, challenge, onChange }: {
   onChange: (c: ChallengeData) => void;
 }) {
   if (type === 'cipher') return <CipherForm challenge={challenge as CipherChallengeData} onChange={onChange} />;
+  if (type === 'cipherWheels') return <CipherWheelsForm challenge={challenge as CipherWheelsChallengeData} onChange={onChange} />;
   if (type === 'pattern') return <PatternForm challenge={challenge as PatternChallengeData} onChange={onChange} />;
   if (type === 'oddoneout') return <OddOneOutForm challenge={challenge as OddOneOutChallengeData} onChange={onChange} />;
   if (type === 'trivia') return <TriviaForm challenge={challenge as TriviaChallengeData} onChange={onChange} />;
@@ -216,6 +218,114 @@ function CipherForm({ challenge, onChange }: { challenge: CipherChallengeData; o
       <div className="bg-[#0a0a0a] rounded-xl px-4 py-3 flex items-center justify-between">
         <span className="text-[10px] uppercase tracking-widest text-[#e5e2e1]/30">פתרון מחושב</span>
         <span className="font-mono font-bold text-[#00FBFB] tracking-widest">{challenge.solution || '—'}</span>
+      </div>
+    </div>
+  );
+}
+
+// ─── Cipher Wheels Form ───────────────────────────────────────────────────────
+
+const CIPHER_WHEELS_DEFAULT_INSTRUCTION = 'סובבו כל גלגלת כדי לחשוף את המילה המוצפנת';
+
+function CipherWheelsForm({ challenge, onChange }: { challenge: CipherWheelsChallengeData; onChange: (c: ChallengeData) => void }) {
+  const alphabet = challenge.alphabet?.length ? challenge.alphabet : HEBREW_ALPHABET;
+  const shift = challenge.shift ?? 3;
+  const direction = challenge.direction ?? 'forward';
+
+  const recompute = (word: string, nextShift: number, nextDirection: 'forward' | 'backward') => {
+    const cleanWord = Array.from(word).filter(ch => alphabet.includes(ch));
+    const initialValues = encodeWord(cleanWord.join(''), nextShift, nextDirection, alphabet);
+    onChange({
+      ...challenge,
+      solution: cleanWord.join(''),
+      shift: nextShift,
+      direction: nextDirection,
+      alphabet,
+      initialValues,
+      wheelCount: initialValues.length,
+    });
+  };
+
+  return (
+    <div className="space-y-5">
+      <div>
+        <label className={lbl}>הוראה לשחקנים — אופציונלי</label>
+        <input
+          className={inp}
+          placeholder={CIPHER_WHEELS_DEFAULT_INSTRUCTION}
+          value={challenge.instruction ?? ''}
+          onChange={e => onChange({ ...challenge, instruction: e.target.value })}
+        />
+      </div>
+
+      <div>
+        <label className={lbl}>מילת המפתח המפוענחת</label>
+        <input
+          className={inp + ' text-center font-mono text-lg tracking-widest'}
+          placeholder="אליס"
+          dir="rtl"
+          value={challenge.solution}
+          onChange={e => recompute(e.target.value, shift, direction)}
+        />
+        <p className="text-[10px] text-[#e5e2e1]/25 mt-2">
+          זו גם התשובה שהשחקנים יקלידו בשדה התשובה הרגיל אחרי שיפענחו את הגלגלות
+        </p>
+      </div>
+
+      <div className="flex gap-3">
+        <div className="flex-1">
+          <label className={lbl}>הזזה</label>
+          <input
+            type="number"
+            min={1}
+            max={alphabet.length - 1}
+            className={inp + ' text-center font-mono'}
+            value={shift}
+            onChange={e => recompute(challenge.solution, Number(e.target.value) || 1, direction)}
+          />
+        </div>
+        <div className="flex-1">
+          <label className={lbl}>כיוון ההצפנה</label>
+          <div className="flex gap-2">
+            {(['forward', 'backward'] as const).map(d => (
+              <button
+                key={d}
+                type="button"
+                onClick={() => recompute(challenge.solution, shift, d)}
+                className={[
+                  'flex-1 py-3 rounded-xl text-xs font-semibold border transition-colors',
+                  direction === d
+                    ? 'border-[#00FBFB]/60 bg-[#1a2a2a] text-[#00FBFB]'
+                    : 'border-[#3a4a49]/40 bg-[#0a0a0a] text-[#e5e2e1]/50 hover:border-[#3a4a49]/70',
+                ].join(' ')}
+              >
+                {d === 'forward' ? 'קדימה' : 'אחורה'}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <label className="flex items-center gap-2 cursor-pointer">
+        <input
+          type="checkbox"
+          checked={challenge.enableTickSound !== false}
+          onChange={e => onChange({ ...challenge, enableTickSound: e.target.checked })}
+          className="accent-[#00FBFB]"
+        />
+        <span className="text-xs text-[#e5e2e1]/50">צליל טיק מכני בסיבוב</span>
+      </label>
+
+      <div className="bg-[#0a0a0a] rounded-xl px-4 py-3 space-y-2">
+        <div className="flex items-center justify-between">
+          <span className="text-[10px] uppercase tracking-widest text-[#e5e2e1]/30">מצב התחלה מוצפן (מחושב אוטומטית)</span>
+        </div>
+        <p className="font-mono font-bold text-[#00FBFB] tracking-widest text-center text-lg" dir="rtl">
+          {challenge.initialValues?.length ? challenge.initialValues.join(' ') : '—'}
+        </p>
+        <p className="text-[10px] text-[#e5e2e1]/25 text-center">
+          זה מה שהשחקנים רואים בגלגלות בתחילת האתגר — הם יסובבו {shift} צעדים {direction === 'forward' ? 'אחורה' : 'קדימה'} כדי לפענח
+        </p>
       </div>
     </div>
   );
@@ -573,6 +683,19 @@ function blankChallenge(type: ChallengeType): ChallengeData {
   switch (type) {
     case 'cipher':
       return { type: 'cipher', key: [{ symbol: '', digit: '' }], encodedMessage: [], solution: '' };
+    case 'cipherWheels':
+      return {
+        type: 'cipherWheels',
+        alphabet: HEBREW_ALPHABET,
+        initialValues: [],
+        wheelCount: 0,
+        shift: 3,
+        direction: 'forward',
+        instruction: CIPHER_WHEELS_DEFAULT_INSTRUCTION,
+        theme: 'antique',
+        enableTickSound: true,
+        solution: '',
+      };
     case 'pattern':
       return { type: 'pattern', items: [], blankCount: 0, solution: '' };
     case 'oddoneout':
@@ -601,6 +724,7 @@ function blankChallenge(type: ChallengeType): ChallengeData {
 function templateName(type: ChallengeType | null): string {
   const map: Record<string, string> = {
     cipher: 'צופן סמלים',
+    cipherWheels: 'גלגלי צופן',
     pattern: 'זיהוי דפוס',
     oddoneout: 'מי לא שייך',
     trivia: 'שאלת ידע',
@@ -613,6 +737,7 @@ function templateName(type: ChallengeType | null): string {
 function isValid(c: ChallengeData): boolean {
   if (!c.solution) return false;
   if (c.type === 'cipher') return c.key.length > 0 && c.encodedMessage.length > 0;
+  if (c.type === 'cipherWheels') return c.initialValues.length > 0;
   if (c.type === 'pattern') return c.items.length > 0;
   if (c.type === 'oddoneout') return c.items.some(i => i.isOdd);
   if (c.type === 'trivia') return c.question.length > 0 && c.options.some(o => o.isCorrect);

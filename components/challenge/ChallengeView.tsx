@@ -2,6 +2,7 @@
 
 import { ChallengeData } from '@/types/challenge';
 import CipherChallenge from './CipherChallenge';
+import CipherWheelsChallenge from './CipherWheelsChallenge';
 import PatternChallenge from './PatternChallenge';
 import OddOneOutChallenge from './OddOneOutChallenge';
 import TriviaChallenge from './TriviaChallenge';
@@ -23,6 +24,8 @@ export default function ChallengeView({ challenge, onCodeChange }: ChallengeView
   switch (challenge.type) {
     case 'cipher':
       return <CipherChallenge challenge={challenge} />;
+    case 'cipherWheels':
+      return <CipherWheelsChallenge challenge={challenge} />;
     case 'pattern':
       return <PatternChallenge challenge={challenge} onCodeChange={onCodeChange} />;
     case 'oddoneout':

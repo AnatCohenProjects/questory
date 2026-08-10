@@ -24,6 +24,7 @@ const card = 'space-y-5 bg-[#131313] border border-[#3a4a49]/30 rounded-2xl p-6'
 
 const challengeTypeLabel: Record<string, string> = {
   cipher: 'צופן סמלים',
+  cipherWheels: 'גלגלי צופן',
   pattern: 'זיהוי דפוס',
   oddoneout: 'מי לא שייך',
   trivia: 'שאלת ידע',

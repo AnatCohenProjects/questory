@@ -13,7 +13,8 @@
  */
 
 export type ChallengeType =
-  | 'cipher'      // פענוח צופן — סמלים → ספרות  (escape room)
+  | 'cipher'        // פענוח צופן — סמלים → ספרות  (escape room)
+  | 'cipherWheels'  // גלגלי צופן — סיבוב גלגלות אותיות לפענוח מילה  (escape room)
   | 'pattern'     // השלמת סדרה — מספרים/אותיות עם חסרים  (escape room)
   | 'oddoneout'   // מי לא שייך — בחירה מגריד  (escape room)
   | 'trivia'      // שאלת ידע — בחירה מרובה  (universal)
@@ -36,6 +37,28 @@ export interface CipherChallengeData extends ChallengeBase {
   key: Array<{ symbol: string; digit: string }>;
   /** רצף הסמלים לפענוח */
   encodedMessage: string[];
+  solution: string;
+}
+
+export interface CipherWheelsChallengeData extends ChallengeBase {
+  type: 'cipherWheels';
+  /** אלפבית התווים שכל גלגלת מסתובבת בו, בסדר קבוע */
+  alphabet: string[];
+  /** מצב ההתחלה של כל גלגלת (המצב המוצפן) — אורך = מספר הגלגלות */
+  initialValues: string[];
+  /** מספר הגלגלות — נגזר בפועל מ-initialValues.length */
+  wheelCount: number;
+  /** ההזזה שהופעלה כדי להצפין את המילה (למחשוב אוטומטי ב-Builder) */
+  shift?: number;
+  /** כיוון ההצפנה — כדי לפענח, השחקן מסובב לכיוון ההפוך */
+  direction?: 'forward' | 'backward';
+  /** הוראה קצרה לשחקנים — אופציונלי */
+  instruction?: string;
+  /** ערכת עיצוב חזותית */
+  theme?: 'antique';
+  /** צליל טיק מכני בכל סיבוב */
+  enableTickSound?: boolean;
+  /** המילה המפוענחת — גם היא התשובה שתאומת בשדה התשובה הרגיל */
   solution: string;
 }
 
@@ -108,6 +131,7 @@ export interface ImagePuzzleChallengeData extends ChallengeBase {
 
 export type ChallengeData =
   | CipherChallengeData
+  | CipherWheelsChallengeData
   | PatternChallengeData
   | OddOneOutChallengeData
   | TriviaChallengeData

@@ -34,7 +34,7 @@ export const libraryDraft: GameDraft = {
       },
       media: [],
       transitionRiddle: {
-        enabled: true,
+        enabled: false,
         prompt: 'ניבי: "הרסיס הבא נמצא ליד ילדה שרדפה אחרי ארנב לבן ונפלה לתוך בור מסתורי. מהו שם הספר?"',
         answer: 'אליס|alice|אליס בארץ הפלאות',
         targetBook: { title: 'אליס בארץ הפלאות', author: 'לואיס קרול', location: 'ספרות ילדים קלאסית, לפי שם מחבר: קרול' },
@@ -56,7 +56,7 @@ export const libraryDraft: GameDraft = {
       answer: 'ארנב|rabbit|ארנב לבן|white rabbit',
       media: [],
       transitionRiddle: {
-        enabled: true,
+        enabled: false,
         prompt: 'ניבי: "הרסיס האחרון נמצא ליד ילד עם צלקת ברק על המצח, שגילה ביום הולדתו ה-11 שהוא קוסם. מהו שם הספר?"',
         answer: 'הארי פוטר|harry potter|הארי',
         targetBook: { title: 'הארי פוטר ואבן החכמים', author: "ג'ואן ק. רולינג", location: 'ספרות נוער, לפי שם מחבר: רולינג' },
